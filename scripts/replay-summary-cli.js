@@ -2,7 +2,9 @@
 
 const fs = require("fs");
 const https = require("https");
+const net = require("net");
 const path = require("path");
+const tls = require("tls");
 
 function parseArgs(argv) {
   const args = { includeAwrDeepDive: false, useLlm: false };
@@ -297,19 +299,68 @@ function callOpenAi(payload, model) {
     ],
   });
 
+  const requestOptions = {
+    hostname: "api.openai.com",
+    port: 443,
+    path: "/v1/responses",
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(requestBody),
+    },
+  };
+
+  const proxyUrlRaw = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy;
+  const proxyUrl = proxyUrlRaw ? new URL(proxyUrlRaw) : null;
+  if (proxyUrl && proxyUrl.hostname) {
+    requestOptions.createConnection = (_opts, callback) => {
+      const proxyPort = Number(proxyUrl.port || 80);
+      const proxySocket = net.connect(proxyPort, proxyUrl.hostname);
+
+      proxySocket.once("error", callback);
+      proxySocket.once("connect", () => {
+        const authHeader =
+          proxyUrl.username || proxyUrl.password
+            ? `Proxy-Authorization: Basic ${Buffer.from(
+                `${decodeURIComponent(proxyUrl.username || "")}:${decodeURIComponent(proxyUrl.password || "")}`
+              ).toString("base64")}\r\n`
+            : "";
+        const connectReq =
+          `CONNECT api.openai.com:443 HTTP/1.1\r\n` +
+          `Host: api.openai.com:443\r\n` +
+          authHeader +
+          `Connection: close\r\n\r\n`;
+        proxySocket.write(connectReq);
+      });
+
+      let responseBuffer = "";
+      const onData = (chunk) => {
+        responseBuffer += chunk.toString("utf8");
+        if (!responseBuffer.includes("\r\n\r\n")) {
+          return;
+        }
+        proxySocket.removeListener("data", onData);
+        const statusLine = responseBuffer.split("\r\n")[0] || "";
+        if (!/^HTTP\/1\.[01] 200 /.test(statusLine)) {
+          callback(new Error(`Proxy CONNECT failed: ${statusLine}`));
+          proxySocket.destroy();
+          return;
+        }
+        const secureSocket = tls.connect({
+          socket: proxySocket,
+          servername: "api.openai.com",
+        });
+        secureSocket.once("secureConnect", () => callback(null, secureSocket));
+        secureSocket.once("error", callback);
+      };
+      proxySocket.on("data", onData);
+    };
+  }
+
   return new Promise((resolve, reject) => {
     const req = https.request(
-      {
-        hostname: "api.openai.com",
-        port: 443,
-        path: "/v1/responses",
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(requestBody),
-        },
-      },
+      requestOptions,
       (res) => {
         const chunks = [];
         res.on("data", (chunk) => chunks.push(chunk));
