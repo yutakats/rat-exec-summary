@@ -49,10 +49,14 @@ You can generate Replay executive summary HTML directly from the command line.
    - `npm install`
 2. Run wrapper:
    - `node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --replay-id 22 --out /tmp/replay-22-summary.html`
+3. Optional LLM narrative from CLI:
+   - `OPENAI_API_KEY=... node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --replay-id 22 --use-llm --openai-model gpt-4.1 --out /tmp/replay-22-summary-llm.html`
 
 Optional flags:
 - `--reports-root <dir>` override report root (defaults to `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports` or `REPORTS_ROOT` env var)
 - `--include-awr-deep-dive` include the AWR drill-down section
+- `--use-llm` apply optional LLM narrative rewrite in CLI mode
+- `--openai-model <model>` override LLM model (defaults to `OPENAI_MODEL` or `gpt-4.1`)
 
 You can also open `/Users/yutaka/Documents/codex-1/apps/web/spa.html` directly in a browser and upload SPA HTML reports locally. The SPA flow does not require the Ruby service because it reads the selected files in-browser.
 
