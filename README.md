@@ -49,11 +49,13 @@ You can generate Replay executive summary HTML directly from the command line.
    - `npm install`
 2. Run wrapper:
    - `node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --replay-id 22 --out /tmp/replay-22-summary.html`
+   - `node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --report-dir /path/to/replay22 --out /tmp/replay-22-summary.html`
 3. Optional LLM narrative from CLI:
    - `OPENAI_API_KEY=... node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --replay-id 22 --use-llm --openai-model gpt-4.1 --out /tmp/replay-22-summary-llm.html`
 
 Optional flags:
 - `--reports-root <dir>` override report root (defaults to `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports` or `REPORTS_ROOT` env var)
+- `--report-dir <dir>` read report HTML files directly from a local folder (alternative to `--replay-id`)
 - `--include-awr-deep-dive` include the AWR drill-down section
 - `--use-llm` apply optional LLM narrative rewrite in CLI mode
 - `--openai-model <model>` override LLM model (defaults to `OPENAI_MODEL` or `gpt-4.1`)

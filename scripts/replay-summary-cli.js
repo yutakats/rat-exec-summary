@@ -10,6 +10,8 @@ function parseArgs(argv) {
     const token = argv[i];
     if (token === "--replay-id") {
       args.replayId = argv[++i];
+    } else if (token === "--report-dir") {
+      args.reportDir = argv[++i];
     } else if (token === "--reports-root") {
       args.reportsRoot = argv[++i];
     } else if (token === "--out") {
@@ -32,11 +34,12 @@ function parseArgs(argv) {
 function usage() {
   return [
     "Usage:",
-    "  node scripts/replay-summary-cli.js --replay-id <id> [--reports-root <dir>] [--out <file>] [--include-awr-deep-dive] [--use-llm] [--openai-model <model>]",
+    "  node scripts/replay-summary-cli.js (--replay-id <id> [--reports-root <dir>] | --report-dir <dir>) [--out <file>] [--include-awr-deep-dive] [--use-llm] [--openai-model <model>]",
     "",
     "Examples:",
     "  node scripts/replay-summary-cli.js --replay-id 22 --out /tmp/replay-22-summary.html",
     "  node scripts/replay-summary-cli.js --replay-id 'Replay 4' --include-awr-deep-dive",
+    "  node scripts/replay-summary-cli.js --report-dir /path/to/replay22 --out /tmp/replay-22-summary.html",
     "  node scripts/replay-summary-cli.js --replay-id 22 --use-llm --openai-model gpt-4.1",
   ].join("\n");
 }
@@ -97,6 +100,50 @@ function loadReplayBundle(reportsRoot, replayId) {
     throw new Error(`Compare Period Report file not found in ${replayDir}`);
   }
 
+  return {
+    replayId,
+    dbReplayHtml: fs.readFileSync(dbReplayPath, "utf8"),
+    compareHtml: fs.readFileSync(comparePath, "utf8"),
+    awrHtml: awrPath ? fs.readFileSync(awrPath, "utf8") : "",
+    captureHtml: capturePath ? fs.readFileSync(capturePath, "utf8") : "",
+  };
+}
+
+function loadReplayBundleFromDir(reportDir, replayIdOverride) {
+  const replayDir = path.resolve(reportDir);
+  if (!fs.existsSync(replayDir) || !fs.statSync(replayDir).isDirectory()) {
+    throw new Error(`Report directory not found: ${replayDir}`);
+  }
+
+  const dbReplayPath = findReportFile(
+    replayDir,
+    [/^DB Replay Report\.htm[l]?$/i],
+    [/replay[_ -]?report/i, /during[_ -]?replay/i, /replay/i]
+  );
+  const comparePath = findReportFile(
+    replayDir,
+    [/^Compare Period Report\.htm[l]?$/i],
+    [/compare[_ -]?period/i, /compare/i]
+  );
+  const awrPath = findReportFile(
+    replayDir,
+    [/^AWR Compare Period Report.*\.htm[l]?$/i],
+    [/awr.*(compare|diff|report)/i, /awr/i]
+  );
+  const capturePath = findReportFile(
+    replayDir,
+    [/^Database Capture Report.*\.htm[l]?$/i, /^workload_capture_report\.htm[l]?$/i, /^capture_report\.htm[l]?$/i],
+    [/database[_ -]?capture/i, /workload[_ -]?capture/i, /capture[_ -]?report/i]
+  );
+
+  if (!dbReplayPath) {
+    throw new Error(`DB Replay Report file not found in ${replayDir}`);
+  }
+  if (!comparePath) {
+    throw new Error(`Compare Period Report file not found in ${replayDir}`);
+  }
+
+  const replayId = replayIdOverride || path.basename(replayDir);
   return {
     replayId,
     dbReplayHtml: fs.readFileSync(dbReplayPath, "utf8"),
@@ -298,9 +345,12 @@ function callOpenAi(payload, model) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (args.help || !args.replayId) {
+  if (args.help || (!args.replayId && !args.reportDir)) {
     console.log(usage());
     process.exit(args.help ? 0 : 1);
+  }
+  if (args.replayId && args.reportDir) {
+    throw new Error("Use either --replay-id or --report-dir, not both.");
   }
 
   const projectRoot = path.resolve(__dirname, "..");
@@ -309,7 +359,9 @@ async function main() {
   );
 
   const app = loadCoreParser(projectRoot);
-  const bundle = loadReplayBundle(reportsRoot, args.replayId);
+  const bundle = args.reportDir
+    ? loadReplayBundleFromDir(args.reportDir, args.replayId)
+    : loadReplayBundle(reportsRoot, args.replayId);
   const deterministicSummary = app.buildReplaySummary({
     replayId: bundle.replayId,
     dbReplayHtml: bundle.dbReplayHtml,
