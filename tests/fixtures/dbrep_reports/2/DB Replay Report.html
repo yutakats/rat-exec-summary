@@ -1,0 +1,1402 @@
+
+<!-- saved from url=(0184)https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&reportDataName=replay_report_html&reportDataType=2&reportEntityId=15 -->
+<html lang="en" xmlns:fn="http://www.w3.org/2005/02/xpath-functions"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <title> DB Replay Report </title>
+        <script type="text/javascript">
+        function toggle_visibility(id) {
+          var e = document.getElementById(id);
+          if(e.style.display == 'none') {
+            e.style.display = '';
+          }
+          else {
+            e.style.display = 'none';
+          }
+        }
+      </script>
+        <style type="text/css">
+
+        body, table {
+          font-size:          8pt;
+          font-family:        Verdana,Arial;
+          text-decoration:    none;
+          color:              #000000;
+          background-color:   #ffffff;
+        }
+
+        th {
+          color:            #ffffff;
+          background-color: #0066CC;
+          padding:          2px;
+        }
+
+        td {
+          padding:          2px;
+        }
+
+        .report_title {
+          font-size:          20pt;
+          font-weight:        bold;
+          color:              #336699;
+        }
+
+        .chapter_title {
+          font-size:          14pt;
+          font-weight:        bold;
+          color:              #336699;
+          text-decoration:    underline;
+        }
+
+        .section_title {
+          font-size:          12pt;
+          font-weight:        bold;
+          color:              #336699;
+        }
+
+        .subsection_title {
+          font-size:          10pt;
+          font-weight:        bold;
+          color:              #336699;
+          padding-left:       8px;
+        }
+
+        .no_data_message {
+          font-size:          8pt;
+          font-weight:        bold;
+          padding-left:       4px;
+          color:              #000000;
+          background-color:   #ffffff;
+        }
+
+        .hide_this {
+          display:            none;
+        }
+
+        .row0 {
+          background-color:  #ffffbb;
+        }
+
+        .row1 {
+          background-color:  #ffffff;
+        }
+
+        table { empty-cells: show;}
+
+      </style>
+    </head>
+    <body>
+        <div class="report_title">
+      DB Replay Report for 
+      sh_upgradetest_02</div>
+        <hr>
+        <p>
+        <table cellspacing="0" cellpadding="0" border="2" summary="database header">
+            <tbody><tr>
+                <th scope="col"> DB Name </th>
+                <th scope="col"> DB Id </th>
+                <th scope="col"> Release </th>
+                <th scope="col"> RAC </th>
+                <th scope="col"> Replay Name </th>
+                <th scope="col"> Replay Status </th>
+            </tr>
+            <tr>
+                <td scope="row">CDB$ROOT</td>
+                <td>914873574</td>
+                <td>23.26.1.0.0</td>
+                <td>NO</td>
+                <td>sh_upgradetest_02</td>
+                <td>COMPLETED</td>
+            </tr>
+        </tbody></table>
+        </p><p>
+        </p><div class="subsection_title">
+      Replay Information
+    </div>
+        <table cellspacing="0" cellpadding="0" border="2" summary="capture/replay header">
+            <tbody><tr>
+                <th align="center">
+          Information
+        </th>
+                <th scope="col"> 
+          Replay
+        </th>
+                <th scope="col">
+          Capture
+        </th>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Name
+        </td>
+                <td>sh_upgradetest_02</td>
+                <td>SH_load_capture927931</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Status
+        </td>
+                <td>COMPLETED</td>
+                <td>COMPLETED</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Database Name
+        </td>
+                <td>CDB$ROOT</td>
+                <td>SDB2</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Database Version
+        </td>
+                <td>23.26.1.0.0</td>
+                <td>19.3.0.0.0</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Start Time
+        </td>
+                <td>30-03-26 17:03:53</td>
+                <td>27-03-26 19:17:24</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          End Time
+        </td>
+                <td>30-03-26 17:11:43</td>
+                <td>27-03-26 19:27:24</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Duration
+        </td>
+                <td>7 minutes 50 seconds</td>
+                <td>10 minutes 0 seconds</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Directory Object
+        </td>
+                <td>EM_REPLAY_TASK_10_1</td>
+                <td>EM_REPLAY_TASK_10_1</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Directory Path
+        </td>
+                <td>/home/opc/replay02</td>
+                <td>/home/opc/replay02</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          AWR DB Id
+        </td>
+                <td>914873574</td>
+                <td>
+            </td></tr>
+            <tr class="row1">
+                <td scope="row">
+          AWR Begin Snap Id
+        </td>
+                <td>47</td>
+                <td>
+            </td></tr>
+            <tr class="row0">
+                <td scope="row">
+          AWR End Snap Id
+        </td>
+                <td>48</td>
+                <td>
+            </td></tr>
+            <tr class="row1">
+                <td scope="row">
+          PL/SQL Mode
+        </td>
+                <td>TOP_LEVEL</td>
+                <td>EXTENDED</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Encryption Algorithm
+        </td>
+                <td>
+                </td><td>
+            </td></tr>
+            <tr class="row1">
+                <td scope="row">
+          Replay Directory Number
+        </td>
+                <td>758985342</td>
+                <td> 
+          N/A
+        </td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          DB Replay Patch Info
+        </td>
+                <td>
+                </td><td>
+            </td></tr>
+        </tbody></table>
+        <p>
+        </p><div class="subsection_title">
+      Replay Options
+    </div>
+        <table cellspacing="0" cellpadding="0" border="2" summary="replay options">
+            <tbody><tr>
+                <th align="center">
+          Option Name
+        </th>
+                <th scope="col">
+          Value
+        </th>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Synchronization
+        </td>
+                <td>TIME</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Connect Time
+        </td>
+                <td>0%
+        </td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Connect Time Auto Correct
+        </td>
+                <td>YES</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Think Time
+        </td>
+                <td>0%
+        </td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Think Time Auto Correct
+        </td>
+                <td>TRUE</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Query Only
+        </td>
+                <td>N</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Number of WRC Clients
+        </td>
+                <td>1
+          (1 Completed,
+           
+               0
+             
+           Running
+          )
+        </td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="subsection_title">
+      Replay Statistics
+    </div>
+        <table cellspacing="0" cellpadding="0" border="2" summary="capture/replay statistics">
+            <tbody><tr>
+                <th align="center">
+          Statistic
+        </th>
+                <th scope="col">
+          Replay
+        </th>
+                <th scope="col">
+            Capture
+          </th>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          DB Time
+        </td>
+                <td align="right">9 hours 13 minutes 8.8 seconds</td>
+                <td align="right">2 hours 5 minutes 53.71 seconds</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          PL/SQL DB Time
+        </td>
+                <td align="right">6.1 seconds</td>
+                <td align="right">4.58 seconds</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          User calls
+        </td>
+                <td align="right">110589</td>
+                <td align="right">110589</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          PL/SQL user calls
+        </td>
+                <td align="right">25517</td>
+                <td align="right">25517</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          PL/SQL subcalls
+        </td>
+                <td align="right">
+              N/A
+            </td>
+                <td align="right">0</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Average Active Sessions
+        </td>
+                <td align="right">70.61</td>
+                <td align="right">12.59</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Capture Files
+        </td>
+                <td align="right">79</td>
+                <td align="right">79</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Finished Replay Sessions
+        </td>
+                <td align="right">79</td>
+                <td align="right">79</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="subsection_title">
+      Replay Divergence Summary
+    </div>
+        <table cellspacing="0" cellpadding="0" border="2" summary="replay divergence summary">
+            <tbody><tr>
+                <th align="center">
+          Divergence Type
+        </th>
+                <th scope="col">
+          Count
+        </th>
+                <th scope="col">
+          % Total
+        </th>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          Session Failures During Replay
+        </td>
+                <td align="right">0</td>
+                <td align="right">0.00</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Errors No Longer Seen During Replay
+        </td>
+                <td align="right">0</td>
+                <td align="right">0.00</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          New Errors Seen During Replay
+        </td>
+                <td align="right">0</td>
+                <td align="right">0.00</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          Errors Mutated During Replay
+        </td>
+                <td align="right">0</td>
+                <td align="right">0.00</td>
+            </tr>
+            <tr class="row1">
+                <td scope="row">
+          DMLs with Different Number of Rows Modified
+        </td>
+                <td align="right">0</td>
+                <td align="right">0.00</td>
+            </tr>
+            <tr class="row0">
+                <td scope="row">
+          SELECTs with Different Number of Rows Fetched
+        </td>
+                <td align="right">3080</td>
+                <td align="right">2.79</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><p>
+        </p><hr>
+        <div class="chapter_title">
+       Table of Contents
+     </div>
+        <ul>
+            <li>
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#wkld_profile_link">Workload Profile</a>
+            </li>
+            <li>
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#finished_repsess_link">Finished Replay Sessions</a>
+            </li>
+            <li>
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#replay_div_link">Replay Divergence</a>
+            </li>
+            <li>
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#wrc_alerts_link">Replay Clients Alerts</a>
+            </li>
+            <li>
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#replay_filters_link">Replay Filters</a>
+            </li>
+        </ul>
+        <hr>
+        <div class="chapter_title">
+            <a name="wkld_profile_link">
+            
+       Workload Profile
+     
+        </a></div><a name="wkld_profile_link">
+        <p>
+        </p><div class="section_title">
+      Top Events
+    </div>
+        <ora_invisible>
+            </ora_invisible></a><div id="workload_profile_top_events_show" style="display: none;"><a name="wkld_profile_link">
+                </a><a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_events_show" name="anchor_workload_profile_top_events_show" onclick="toggle_visibility(&#39;workload_profile_top_events&#39;); toggle_visibility(&#39;workload_profile_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_events_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        
+        <ora_invisible>
+            <div id="workload_profile_top_events_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_events_hide" name="anchor_workload_profile_top_events_hide" onclick="toggle_visibility(&#39;workload_profile_top_events&#39;); toggle_visibility(&#39;workload_profile_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_events_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="workload_profile_top_events" cellpadding="0" cellspacing="0" border="2" summary="workload profile top events">
+            <tbody><tr>
+                <th scope="col">Event</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Total Wait Time</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">CPU</td>
+                <td>1</td>
+                <td>19750 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">latch: shared pool</td>
+                <td>1</td>
+                <td>12240 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">row cache mutex</td>
+                <td>1</td>
+                <td>1050 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">library cache: mutex X</td>
+                <td>1</td>
+                <td>120 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">Allocate UGA memory from OS</td>
+                <td>1</td>
+                <td>100 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">Free private memory to OS</td>
+                <td>1</td>
+                <td>90 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">Allocate CGA memory from OS</td>
+                <td>1</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">cursor: pin S wait on X</td>
+                <td>1</td>
+                <td>20 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">oracle thread bootstrap</td>
+                <td>1</td>
+                <td>20 seconds</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="section_title">
+      Top SQL with Top Events
+    </div>
+        <ora_invisible>
+            <div id="workload_profile_top_sql_with_top_events_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_sql_with_top_events_show" name="anchor_workload_profile_top_sql_with_top_events_show" onclick="toggle_visibility(&#39;workload_profile_top_sql_with_top_events&#39;); toggle_visibility(&#39;workload_profile_top_sql_with_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_sql_with_top_events_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="workload_profile_top_sql_with_top_events_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_sql_with_top_events_hide" name="anchor_workload_profile_top_sql_with_top_events_hide" onclick="toggle_visibility(&#39;workload_profile_top_sql_with_top_events&#39;); toggle_visibility(&#39;workload_profile_top_sql_with_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_sql_with_top_events_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="workload_profile_top_sql_with_top_events" cellpadding="0" cellspacing="0" border="2" summary="workload profile top sql with top events">
+            <tbody><tr>
+                <th scope="col">SQL ID</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Event</th>
+                <th scope="col">Total Wait Time</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">3sxsq0v8fu5wz</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>60 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">9q11yc40xsmjp</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>60 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">gppx8hpcwsb5g</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>60 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">01ncdk23uqcks</td>
+                <td>1</td>
+                <td>latch: shared pool</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">03ghr9b5m3x43</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">0cg4p046rys6m</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">39v858fb15k7g</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">416hz7t3mx918</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>40 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">4w4up0t88ccry</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>40 seconds</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="section_title">
+      Top Service/Module
+    </div>
+        <ora_invisible>
+            <div id="workload_profile_top_service_module_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_service_module_show" name="anchor_workload_profile_top_service_module_show" onclick="toggle_visibility(&#39;workload_profile_top_service_module&#39;); toggle_visibility(&#39;workload_profile_top_service_module_show&#39;); toggle_visibility(&#39;workload_profile_top_service_module_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="workload_profile_top_service_module_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_service_module_hide" name="anchor_workload_profile_top_service_module_hide" onclick="toggle_visibility(&#39;workload_profile_top_service_module&#39;); toggle_visibility(&#39;workload_profile_top_service_module_show&#39;); toggle_visibility(&#39;workload_profile_top_service_module_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="workload_profile_top_service_module" cellpadding="0" cellspacing="0" border="2" summary="workload profile top service module">
+            <tbody><tr>
+                <th scope="col">Service</th>
+                <th scope="col">Module</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Total Wait Time</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">NULL</td>
+                <td>SalesByQuarterCountry</td>
+                <td>1</td>
+                <td>5630 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">NULL</td>
+                <td>SalesByWeekCountry</td>
+                <td>1</td>
+                <td>4560 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">NULL</td>
+                <td>SalesMovingAverage</td>
+                <td>1</td>
+                <td>4110 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">NULL</td>
+                <td>SalesCubeByMonth</td>
+                <td>1</td>
+                <td>3890 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">NULL</td>
+                <td>SalesRollupByMonth</td>
+                <td>1</td>
+                <td>3780 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">NULL</td>
+                <td>SalesRollupByWeek</td>
+                <td>1</td>
+                <td>2580 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">NULL</td>
+                <td>TopSalesWithinQuarter</td>
+                <td>1</td>
+                <td>2370 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">NULL</td>
+                <td>SalesCubeByWeek</td>
+                <td>1</td>
+                <td>1430 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">NULL</td>
+                <td>ProductSalesRollupCube</td>
+                <td>1</td>
+                <td>1310 seconds</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="section_title">
+      Top Sessions with Top Events
+    </div>
+        <ora_invisible>
+            <div id="workload_profile_top_sessions_top_events_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_sessions_top_events_show" name="anchor_workload_profile_top_sessions_top_events_show" onclick="toggle_visibility(&#39;workload_profile_top_sessions_top_events&#39;); toggle_visibility(&#39;workload_profile_top_sessions_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_sessions_top_events_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="workload_profile_top_sessions_top_events_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_workload_profile_top_sessions_top_events_hide" name="anchor_workload_profile_top_sessions_top_events_hide" onclick="toggle_visibility(&#39;workload_profile_top_sessions_top_events&#39;); toggle_visibility(&#39;workload_profile_top_sessions_top_events_show&#39;); toggle_visibility(&#39;workload_profile_top_sessions_top_events_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="workload_profile_top_sessions_top_events" cellpadding="0" cellspacing="0" border="2" summary="workload profile top sessions top events">
+            <tbody><tr>
+                <th scope="col">Session ID</th>
+                <th scope="col">Session Serial#</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Event</th>
+                <th scope="col">Total Wait Time</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">360</td>
+                <td>40472</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>320 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">101</td>
+                <td>20853</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>300 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">114</td>
+                <td>58620</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>290 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">321</td>
+                <td>64683</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>290 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">329</td>
+                <td>22988</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>290 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">341</td>
+                <td>12620</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>290 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">343</td>
+                <td>56101</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>290 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">64</td>
+                <td>27651</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>280 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">84</td>
+                <td>56096</td>
+                <td>1</td>
+                <td>CPU</td>
+                <td>280 seconds</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><hr>
+        <div class="chapter_title">
+            <a name="finished_repsess_link">
+            
+       Finished Replay Sessions
+     
+        </a></div><a name="finished_repsess_link">
+        <p>
+        </p><div class="section_title">
+       Replay Session Top Events
+     </div>
+        <ora_invisible>
+            </ora_invisible></a><div id="finished_replay_sessions_top_events_show" style="display: none;"><a name="finished_repsess_link">
+                </a><a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_replay_sessions_top_events_show" name="anchor_finished_replay_sessions_top_events_show" onclick="toggle_visibility(&#39;finished_replay_sessions_top_events&#39;); toggle_visibility(&#39;finished_replay_sessions_top_events_show&#39;); toggle_visibility(&#39;finished_replay_sessions_top_events_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        
+        <ora_invisible>
+            <div id="finished_replay_sessions_top_events_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_replay_sessions_top_events_hide" name="anchor_finished_replay_sessions_top_events_hide" onclick="toggle_visibility(&#39;finished_replay_sessions_top_events&#39;); toggle_visibility(&#39;finished_replay_sessions_top_events_show&#39;); toggle_visibility(&#39;finished_replay_sessions_top_events_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="finished_replay_sessions_top_events" cellpadding="0" cellspacing="0" border="2" summary="finished replay sessions top events">
+            <tbody><tr>
+                <th scope="col">Event</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Total Wait Time</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">CPU</td>
+                <td>1</td>
+                <td>19320 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">latch: shared pool</td>
+                <td>1</td>
+                <td>11810 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">row cache mutex</td>
+                <td>1</td>
+                <td>1050 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">library cache: mutex X</td>
+                <td>1</td>
+                <td>120 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">Allocate UGA memory from OS</td>
+                <td>1</td>
+                <td>100 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">Free private memory to OS</td>
+                <td>1</td>
+                <td>90 seconds</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">Allocate CGA memory from OS</td>
+                <td>1</td>
+                <td>30 seconds</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">cursor: pin S wait on X</td>
+                <td>1</td>
+                <td>10 seconds</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="section_title">
+       Top Slowest Replay Sessions
+     </div>
+        <ora_invisible>
+            <div id="finished_top_slowest_replay_sessions_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_top_slowest_replay_sessions_show" name="anchor_finished_top_slowest_replay_sessions_show" onclick="toggle_visibility(&#39;finished_top_slowest_replay_sessions&#39;); toggle_visibility(&#39;finished_top_slowest_replay_sessions_show&#39;); toggle_visibility(&#39;finished_top_slowest_replay_sessions_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="finished_top_slowest_replay_sessions_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_top_slowest_replay_sessions_hide" name="anchor_finished_top_slowest_replay_sessions_hide" onclick="toggle_visibility(&#39;finished_top_slowest_replay_sessions&#39;); toggle_visibility(&#39;finished_top_slowest_replay_sessions_show&#39;); toggle_visibility(&#39;finished_top_slowest_replay_sessions_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="finished_top_slowest_replay_session" cellpadding="0" cellspacing="0" border="2" summary="finished top slowest replay sessions">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><div class="section_title">
+       Top Fastest Replay Sessions
+     </div>
+        <ora_invisible>
+            <div id="finished_top_fastest_replay_sessions_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_top_fastest_replay_sessions_show" name="anchor_finished_top_fastest_replay_sessions_show" onclick="toggle_visibility(&#39;finished_top_fastest_replay_sessions&#39;); toggle_visibility(&#39;finished_top_fastest_replay_sessions_show&#39;); toggle_visibility(&#39;finished_top_fastest_replay_sessions_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="finished_top_fastest_replay_sessions_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_finished_top_fastest_replay_sessions_hide" name="anchor_finished_top_fastest_replay_sessions_hide" onclick="toggle_visibility(&#39;finished_top_fastest_replay_sessions&#39;); toggle_visibility(&#39;finished_top_fastest_replay_sessions_show&#39;); toggle_visibility(&#39;finished_top_fastest_replay_sessions_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="finished_top_fastest_replay_sessions" cellpadding="0" cellspacing="0" border="2" summary="finished top fastest replay sessions">
+            <tbody><tr>
+                <th scope="col">Delta</th>
+                <th scope="col">Session ID</th>
+                <th scope="col">Session Serial#</th>
+                <th scope="col">Instance ID</th>
+                <th scope="col">Filename</th>
+                <th scope="col">User Calls</th>
+                <th scope="col">Capture Elapsed</th>
+                <th scope="col">Replay Elapsed</th>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">420 seconds ahead</td>
+                <td>259</td>
+                <td>38077</td>
+                <td>1</td>
+                <td>wcr_cdpy3h0000000.rec</td>
+                <td>18</td>
+                <td>421</td>
+                <td>1</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">184 seconds ahead</td>
+                <td>344</td>
+                <td>38761</td>
+                <td>1</td>
+                <td>wcr_cdpygh0000006.rec</td>
+                <td>1398</td>
+                <td>600</td>
+                <td>416</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">183 seconds ahead</td>
+                <td>119</td>
+                <td>55215</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000u.rec</td>
+                <td>1425</td>
+                <td>598</td>
+                <td>415</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">181 seconds ahead</td>
+                <td>61</td>
+                <td>62654</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000m.rec</td>
+                <td>1411</td>
+                <td>599</td>
+                <td>418</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">177 seconds ahead</td>
+                <td>128</td>
+                <td>27849</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000s.rec</td>
+                <td>1427</td>
+                <td>600</td>
+                <td>423</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">173 seconds ahead</td>
+                <td>104</td>
+                <td>29324</td>
+                <td>1</td>
+                <td>wcr_cdpygh0000007.rec</td>
+                <td>1389</td>
+                <td>599</td>
+                <td>426</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">168 seconds ahead</td>
+                <td>97</td>
+                <td>44818</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000g.rec</td>
+                <td>1427</td>
+                <td>599</td>
+                <td>431</td>
+            </tr>
+            <tr class="
+          row0">
+                <td scope="row">168 seconds ahead</td>
+                <td>362</td>
+                <td>48576</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000n.rec</td>
+                <td>1419</td>
+                <td>598</td>
+                <td>430</td>
+            </tr>
+            <tr class="
+          row1">
+                <td scope="row">165 seconds ahead</td>
+                <td>260</td>
+                <td>59050</td>
+                <td>1</td>
+                <td>wcr_cdpyhh000000f.rec</td>
+                <td>1397</td>
+                <td>599</td>
+                <td>434</td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><hr>
+        <div class="chapter_title">
+            <a name="replay_div_link">
+            
+      Replay Divergence
+    
+        </a></div><a name="replay_div_link">
+        <div class="section_title">
+      Session Failures 
+    </div>
+        <div class="subsection_title">
+      By Application
+    </div>
+        <ora_invisible>
+            </ora_invisible></a><div id="session_failures_by_app_show" style="display: none;"><a name="replay_div_link">
+                </a><a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_session_failures_by_app_show" name="anchor_session_failures_by_app_show" onclick="toggle_visibility(&#39;session_failures_by_app&#39;); toggle_visibility(&#39;session_failures_by_app_show&#39;); toggle_visibility(&#39;session_failures_by_app_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        
+        <ora_invisible>
+            <div id="session_failures_by_app_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_session_failures_by_app_hide" name="anchor_session_failures_by_app_hide" onclick="toggle_visibility(&#39;session_failures_by_app&#39;); toggle_visibility(&#39;session_failures_by_app_show&#39;); toggle_visibility(&#39;session_failures_by_app_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="session_failures_by_app" cellpadding="0" cellspacing="0" border="2" summary="session failures by application">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="subsection_title">
+      By Error
+    </div>
+        <ora_invisible>
+            <div id="session_failures_by_error_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_session_failures_by_error_show" name="anchor_session_failures_by_error_show" onclick="toggle_visibility(&#39;session_failures_by_error&#39;); toggle_visibility(&#39;session_failures_by_error_show&#39;); toggle_visibility(&#39;session_failures_by_error_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="session_failures_by_error_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_session_failures_by_error_hide" name="anchor_session_failures_by_error_hide" onclick="toggle_visibility(&#39;session_failures_by_error&#39;); toggle_visibility(&#39;session_failures_by_error_show&#39;); toggle_visibility(&#39;session_failures_by_error_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="session_failures_by_error" cellpadding="0" cellspacing="0" border="2" summary="session failures by error code">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="section_title">
+      Error Divergence
+    </div>
+        <div class="subsection_title">
+      By Application
+    </div>
+        <ora_invisible>
+            <div id="error_by_app_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_error_by_app_show" name="anchor_error_by_app_show" onclick="toggle_visibility(&#39;error_by_app&#39;); toggle_visibility(&#39;error_by_app_show&#39;); toggle_visibility(&#39;error_by_app_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="error_by_app_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_error_by_app_hide" name="anchor_error_by_app_hide" onclick="toggle_visibility(&#39;error_by_app&#39;); toggle_visibility(&#39;error_by_app_show&#39;); toggle_visibility(&#39;error_by_app_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="error_by_app" cellpadding="0" cellspacing="0" border="2" summary="error divergence by application">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="subsection_title">
+      By SQL
+    </div>
+        <ora_invisible>
+            <div id="error_by_sql_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_error_by_sql_show" name="anchor_error_by_sql_show" onclick="toggle_visibility(&#39;error_by_sql&#39;); toggle_visibility(&#39;error_by_sql_show&#39;); toggle_visibility(&#39;error_by_sql_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="error_by_sql_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_error_by_sql_hide" name="anchor_error_by_sql_hide" onclick="toggle_visibility(&#39;error_by_sql&#39;); toggle_visibility(&#39;error_by_sql_show&#39;); toggle_visibility(&#39;error_by_sql_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="error_by_sql" cellpadding="0" cellspacing="0" border="2" summary="error divergence by SQL">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="section_title">
+      DML Data Divergence
+    </div>
+        <div class="subsection_title">
+      By Application
+    </div>
+        <ora_invisible>
+            <div id="dml_databy_app_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_dml_databy_app_show" name="anchor_dml_databy_app_show" onclick="toggle_visibility(&#39;dml_databy_app&#39;); toggle_visibility(&#39;dml_databy_app_show&#39;); toggle_visibility(&#39;dml_databy_app_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="dml_databy_app_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_dml_databy_app_hide" name="anchor_dml_databy_app_hide" onclick="toggle_visibility(&#39;dml_databy_app&#39;); toggle_visibility(&#39;dml_databy_app_show&#39;); toggle_visibility(&#39;dml_databy_app_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table cellpadding="0" cellspacing="0" border="2" summary="DML data divergence by application" id="dml_databy_app">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="subsection_title">
+      By SQL
+    </div>
+        <ora_invisible>
+            <div id="dml_data_by_sql_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_dml_data_by_sql_show" name="anchor_dml_data_by_sql_show" onclick="toggle_visibility(&#39;dml_data_by_sql&#39;); toggle_visibility(&#39;dml_data_by_sql_show&#39;); toggle_visibility(&#39;dml_data_by_sql_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="dml_data_by_sql_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_dml_data_by_sql_hide" name="anchor_dml_data_by_sql_hide" onclick="toggle_visibility(&#39;dml_data_by_sql&#39;); toggle_visibility(&#39;dml_data_by_sql_show&#39;); toggle_visibility(&#39;dml_data_by_sql_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="dml_data_by_sql" cellpadding="0" cellspacing="0" border="2" summary="DML data divergence by SQL">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="section_title">
+      SELECT Data Divergence
+    </div>
+        <div class="subsection_title">
+      By Application
+    </div>
+        <ora_invisible>
+            <div id="query_databy_app_show" style="display: none;">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_query_databy_app_show" name="anchor_query_databy_app_show" onclick="toggle_visibility(&#39;query_databy_app&#39;); toggle_visibility(&#39;query_databy_app_show&#39;); toggle_visibility(&#39;query_databy_app_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        </ora_invisible>
+        <ora_invisible>
+            <div id="query_databy_app_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_query_databy_app_hide" name="anchor_query_databy_app_hide" onclick="toggle_visibility(&#39;query_databy_app&#39;); toggle_visibility(&#39;query_databy_app_show&#39;); toggle_visibility(&#39;query_databy_app_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table cellpadding="0" cellspacing="0" border="2" summary="DML data divergence by application" id="query_databy_app">
+            <tbody><tr>
+                <th scope="col">Service Name</th>
+                <th scope="col">Module Name</th>
+                <th scope="col">Count</th>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>PeriodToPeriodComparison</td>
+                <td>63</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>ProductMonthlySalesRollupCube</td>
+                <td>105</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>ProductSalesRollupCube</td>
+                <td>102</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesByQuarterCountry</td>
+                <td>316</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesByWeekCountry</td>
+                <td>427</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesCubeByMonth</td>
+                <td>252</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesCubeByWeek</td>
+                <td>240</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesMovingAverage</td>
+                <td>427</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesRollupByMonth</td>
+                <td>309</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>SalesRollupByWeek</td>
+                <td>345</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>TopSalesWithinQuarter</td>
+                <td>260</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>TopSalesWithinWeek</td>
+                <td>162</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>WeekToWeekComparison</td>
+                <td>67</td>
+            </tr>
+            <tr>
+                <td>pdb1</td>
+                <td>wrc@ol9test (TNS V1-V3)</td>
+                <td>5</td>
+            </tr>
+        </tbody></table>
+        <hr>
+        <div class="chapter_title">
+            <a name="wrc_alerts_link">
+            
+       Replay Clients Alerts
+     
+        </a></div><a name="wrc_alerts_link">
+        <p>
+        <ora_invisible>
+            </ora_invisible></p></a><div id="alerts_show" style="display: none;"><a name="wrc_alerts_link">
+                </a><a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_alerts_show" name="anchor_alerts_show" onclick="toggle_visibility(&#39;alerts&#39;); toggle_visibility(&#39;alerts_show&#39;); toggle_visibility(&#39;alerts_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        
+        <ora_invisible>
+            <div id="alerts_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_alerts_hide" name="anchor_alerts_hide" onclick="toggle_visibility(&#39;alerts&#39;); toggle_visibility(&#39;alerts_show&#39;); toggle_visibility(&#39;alerts_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="alerts" cellpadding="0" cellspacing="0" border="2" summary="alerts">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><hr>
+        <div class="chapter_title">
+            <a name="replay_filters_link">
+            
+       Replay Filters
+     
+        </a></div><a name="replay_filters_link">
+        <p>
+        <ora_invisible>
+            </ora_invisible></p></a><div id="filters_show" style="display: none;"><a name="replay_filters_link">
+                </a><a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_filters_show" name="anchor_filters_show" onclick="toggle_visibility(&#39;filters&#39;); toggle_visibility(&#39;filters_show&#39;); toggle_visibility(&#39;filters_hide&#39;); "> 
+        (+) Show
+      </a>
+            </div>
+        
+        <ora_invisible>
+            <div id="filters_hide">
+                <a href="https://wls141.subnet1rg2phxsu.emdevinfraphx1.oraclevcn.com:7803/em/console/database/workload/report?_em.noNav=true&amp;reportDataName=replay_report_html&amp;reportDataType=2&amp;reportEntityId=15#anchor_filters_hide" name="anchor_filters_hide" onclick="toggle_visibility(&#39;filters&#39;); toggle_visibility(&#39;filters_show&#39;); toggle_visibility(&#39;filters_hide&#39;); "> 
+        (-) Hide
+      </a>
+            </div>
+        </ora_invisible>
+        <table id="filters" cellpadding="0" cellspacing="0" border="2" summary="replay filters">
+            <tbody><tr>
+                <td scope="row">
+                    <div class="no_data_message">
+            No data exists for this section of the report.
+          </div>
+                </td>
+            </tr>
+        </tbody></table>
+        <p>
+        </p><hr>
+        <br>
+        <b> End of Report. </b>
+    
+
+</body></html>

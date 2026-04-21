@@ -1,0 +1,213 @@
+10:15:48 SQL> SELECT dbms_workload_capture.report (12,'TEXT') FROM dual;
+                                                                                                                                                           
+Database Capture Report For SP1                                                                                                                            
+                                                                                                                                                           
+DB Name         DB Id    Release     RAC Capture Name               Status                                                                                 
+------------ ----------- ----------- --- -------------------------- ----------                                                                             
+SP1           1516462261 11.2.0.4.0  NO  capture_20241231           COMPLETED                                                                              
+                                                                                                                                                           
+                                                                                                                                                           
+                   Start time: 31-Dec-24 23:34:57 (SCN = 14343705534283)                                                                                   
+                     End time: 01-Jan-25 07:04:57 (SCN = 14343766396745)                                                                                   
+                     Duration: 7 hours 30 minutes 0 seconds                                                                                                
+                 Capture size: 310.24 GB                                                                                                                   
+             Directory object: WKLD_DIR20241231                                                                                                            
+               Directory path: /oracle_flashback/RAT20241231                                                                                               
+      Directory shared in RAC: TRUE                                                                                                                        
+                 Filters used: 2 EXCLUSION filters                                                                                                         
+                                                                                                                                                           
+Captured Workload Statistics                     DB: SP1  Snaps: 120161-120169                                                                             
+-> 'Value' represents the corresponding statistic aggregated                                                                                               
+      across the entire captured database workload.                                                                                                        
+-> '% Total' is the percentage of 'Value' over the corresponding                                                                                           
+      system-wide aggregated total.                                                                                                                        
+                                                                                                                                                           
+Statistic Name                                   Value   % Total                                                                                           
+---------------------------------------- ------------- ---------                                                                                           
+DB time (secs)                               167098.25     76.19                                                                                           
+Average Active Sessions                           6.19                                                                                                     
+User calls captured                          672285041     99.90                                                                                           
+User calls captured with Errors                 113430                                                                                                     
+Session logins                                    8347     84.12                                                                                           
+Transactions                                   4696854     99.71                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Events Captured                              DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                                                               Avg Active                                                                                  
+Event                               Event Class        % Event   Sessions                                                                                  
+----------------------------------- --------------- ---------- ----------                                                                                  
+enq: TX - row lock contention       Application          33.25       1.67                                                                                  
+CPU + Wait for CPU                  CPU                  32.66       1.64                                                                                  
+db file sequential read             User I/O              9.50       0.48                                                                                  
+WCR: capture file IO write          Other                 1.87       0.09                                                                                  
+read by other session               User I/O              1.26       0.06                                                                                  
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Service/Module Captured                      DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+Service        Module                   % Activity Action               % Action                                                                           
+-------------- ------------------------ ---------- ------------------ ----------                                                                           
+SYS$USERS      /TXN/CL_SAL_GW_API======      20.98 24627                   20.90                                                                           
+               SAPLSNR3                       9.01 2165                     9.01                                                                           
+               /TXN/CL_MOVEINVENTORY===       3.44 1489                     1.77                                                                           
+                                                   3215                     1.10                                                                           
+               /TXN/ZIF214                    1.97 139                      1.97                                                                           
+               RADBTDDF                       1.81 71                       1.78                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top SQL Captured                                 DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                 SQL ID     % Activity Event                          % Event                                                                              
+----------------------- -------------- ------------------------------ -------                                                                              
+          gn6n99xwfuba9          23.11 enq: TX - row lock contention    23.07                                                                              
+UPDATE "/TXN/T_API_STATS" SET "COUNTER"=:A0,"LAST_UPDATE_TIME"=:A1,"USER_ID"=:A2                                                                           
+,"BLOCKTYPE"=:A3,"BLOCKNAME"=:A4 WHERE "CLIENT"=:A5 AND "APPLICATION"=:A6 AND "C                                                                           
+REATED_DATE"=:A7 RETURNING "BLOCKNAME" INTO :A8                                                                                                            
+                                                                                                                                                           
+          gst615mfyydun          10.12 enq: TX - row lock contention    10.12                                                                              
+SELECT * FROM "NRIV" "NRIV" WHERE "CLIENT"=:A0 AND "OBJECT"=:A1 AND "SUBOBJECT"=                                                                           
+:A2 AND "NRRANGENR"=:A3 AND "TOYEAR"=:A4 FOR UPDATE                                                                                                        
+                                                                                                                                                           
+          80sgs4h8941vk           1.96 CPU + Wait for CPU                1.96                                                                              
+SELECT "AUFNR","KOSTV","PRCTR" FROM "AUFK" WHERE "MANDT"=:A0 AND "KOSTV" IN (:A1                                                                           
+,:A2,:A3,:A4,:A5)                                                                                                                                          
+                                                                                                                                                           
+          aszq9u49bbv2x           1.87 CPU + Wait for CPU                1.87                                                                              
+SELECT "BEF_VBELN" FROM "/TXN/T_TQSPL_LOG" WHERE "CLIENT"=:A0 AND "TRKID"=:A1                                                                              
+                                                                                                                                                           
+          68jrptnbgv7nd           1.48 read by other session             0.92                                                                              
+SELECT DISTINCT "VBAK"."VBELN" FROM "VBUK" INNER JOIN "VBAK" ON "VBUK"."MANDT"="                                                                           
+VBAK"."MANDT" AND "VBUK"."MANDT"="VBAK"."MANDT" AND "VBUK"."VBELN"="VBAK"."VBELN                                                                           
+" WHERE "VBUK"."MANDT"=:A0 AND "VBAK"."AUART" IN (:A1,:A2,:A3,:A4,:A5,:A6,:A7,:A                                                                           
+8,:A9,:A10,:A11,:A12,:A13,:A14,:A15,:A16) AND "VBUK"."LFSTK"<>'C' AND "VBUK"."GB                                                                           
+                                                                                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Sessions Captured                            DB: SP1  Snaps: 120161-120169                                                                             
+-> '# Samples Active' shows the number of ASH samples in which the session                                                                                 
+      was found waiting for that particular event. The percentage shown                                                                                    
+      in this column is calculated with respect to wall clock time                                                                                         
+      and not total database activity.                                                                                                                     
+-> 'XIDs' shows the number of distinct transaction IDs sampled in ASH                                                                                      
+      when the session was waiting for that particular event                                                                                               
+-> For sessions running Parallel Queries, this section will NOT aggregate                                                                                  
+      the PQ slave activity into the session issuing the PQ. Refer to                                                                                      
+      the 'Top Sessions running PQs' section for such statistics.                                                                                          
+                                                                                                                                                           
+   Sid, Serial# % Activity Event                             % Event                                                                                       
+--------------- ---------- ------------------------------ ----------                                                                                       
+User                 Program                          # Samples Active     XIDs                                                                            
+-------------------- ------------------------------ ------------------ --------                                                                            
+      201,60227       1.85 enq: TX - row lock contention        1.50                                                                                       
+SAPSR3               dw.sapSP1_D54@...m (TNS V1-V3)   2,034/27K [  8%]        0                                                                            
+                                                                                                                                                           
+     2549,41243       1.63 enq: TX - row lock contention        1.16                                                                                       
+SAPSR3               dw.sapSP1_D52@...m (TNS V1-V3)   1,571/27K [  6%]        1                                                                            
+                                                                                                                                                           
+     3544,31977       1.48 enq: TX - row lock contention        0.98                                                                                       
+SAPSR3               dw.sapSP1_D54@...m (TNS V1-V3)   1,329/27K [  5%]        4                                                                            
+                                                                                                                                                           
+     1415, 7555       1.21 enq: TX - row lock contention        0.58                                                                                       
+SAPSR3               dw.sapSP1_D53@...m (TNS V1-V3)     790/27K [  3%]        3                                                                            
+                                                                                                                                                           
+     2274,13043       1.12 CPU + Wait for CPU                   0.54                                                                                       
+SAPSR3               dw.sapSP1_D50@...m (TNS V1-V3)     737/27K [  3%]        5                                                                            
+                                                                                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Events containing Unreplayable Calls         DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Service/Module containing Unreplayable Calls DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top SQL containing Unreplayable Calls            DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Sessions containing Unreplayable Calls       DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Events Filtered Out                          DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Service/Module Filtered Out                  DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+Service        Module                   % Activity Action               % Action                                                                           
+-------------- ------------------------ ---------- ------------------ ----------                                                                           
+SYS$USERS      rman@lelvsapdbrsp1 (TNS        1.72 0000011 STARTED114       1.35                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top SQL Filtered Out                             DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                 SQL ID     % Activity Event                          % Event                                                                              
+----------------------- -------------- ------------------------------ -------                                                                              
+          0az7czjdw8z7j           1.18 recovery area: computing obsol    0.91                                                                              
+ declare lbRec dbms_rcvman.lbRec_t; lbCursor                                                                                                               
+ dbms_rcvman.lbCursor_t; first boolean := FALSE; re                                                                                                        
+t boolean; begin if (:first > 0) then fi                                                                                                                   
+rst := TRUE; end if; <<next_row>> ret := dbms_rcvm                                                                                                         
+                                                                                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Sessions Filtered Out                        DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Events (Jobs and Background Activity)        DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                                                               Avg Active                                                                                  
+Event                               Event Class        % Event   Sessions                                                                                  
+----------------------------------- --------------- ---------- ----------                                                                                  
+CPU + Wait for CPU                  CPU                   4.36       0.22                                                                                  
+Backup: MML create a backup piece   Administrative        4.22       0.21                                                                                  
+db file parallel write              System I/O            3.75       0.19                                                                                  
+db file sequential read             User I/O              3.18       0.16                                                                                  
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Service/Module (Jobs and Background Activity)DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+Service        Module                   % Activity Action               % Action                                                                           
+-------------- ------------------------ ---------- ------------------ ----------                                                                           
+SYS$BACKGROUND UNNAMED                        7.19 UNNAMED                  7.19                                                                           
+               KTSJ                           5.25 KTSJ Slave               5.25                                                                           
+SYS$USERS      backup archivelog              5.18 0000018 STARTED16        2.05                                                                           
+                                                   0000020 STARTED16        1.36                                                                           
+                                                   0000022 STARTED16        1.07                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top SQL (Jobs and Background Activity)           DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Top Sessions (Jobs and Background Activity)      DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+                  No data exists for this section of the report.                                                                                           
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+Workload Filters                                 DB: SP1  Snaps: 120161-120169                                                                             
+                                                                                                                                                           
+  # Filter Name              Type    Attribute    Value                                                                                                    
+--- ------------------------ ------- ------------ --------------------------                                                                               
+  1 EXCLUDE_SYS              EXCLUDE USER         SYS                                                                                                      
+  2 EXCLUDE_SYSTEM           EXCLUDE USER         SYSTEM                                                                                                   
+          -------------------------------------------------------------                                                                                    
+                                                                                                                                                           
+End of Report                                                                                                                                              
+                                                                                                                                                           
+                                                                                                                                                           
+
+Elapsed: 00:00:00.03
+10:16:20 SQL> spool off

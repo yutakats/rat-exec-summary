@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Ruby syntax
+        run: ruby -c apps/api/server.rb
+
+      - name: Validate JSON schema file
+        run: |
+          ruby -rjson -e 'JSON.parse(File.read("packages/report-models/replay-summary.schema.json"))'
+
+      - name: Verify required governance files
+        run: |
+          test -f SECURITY.md
+          test -f CONTRIBUTING.md
+          test -f CODEOWNERS
+          test -f THIRD_PARTY_LICENSES.md
+
+      - name: Validate AWR regression fixtures
+        run: |
+          bash tests/integration/check_awr_compare_fixtures.sh
+
+      - name: Validate DB Replay status resilience
+        run: |
+          bash tests/integration/check_dbreplay_status_resilience.sh
+
+      - name: Validate capture-report support
+        run: |
+          bash tests/integration/check_capture_report_support.sh

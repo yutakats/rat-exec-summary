@@ -1,0 +1,15 @@
+# Default ownership
+* @oracle-enterprise-manager-replay-team
+
+# App ownership
+/apps/web/ @oracle-enterprise-manager-replay-team
+/apps/api/ @oracle-enterprise-manager-replay-team
+/apps/userscript/ @oracle-enterprise-manager-replay-team
+
+# Parser ownership
+/packages/core-parser/ @oracle-enterprise-manager-replay-team
+/packages/report-models/ @oracle-enterprise-manager-replay-team
+
+# Governance docs
+/docs/ @oracle-enterprise-manager-replay-team
+/SECURITY.md @oracle-enterprise-manager-replay-team

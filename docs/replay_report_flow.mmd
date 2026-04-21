@@ -1,0 +1,43 @@
+flowchart TD
+  A["User clicks Open Executive Summary"] --> B["Load Replay ID report bundle via API"]
+  B --> C["Parse DB Replay Report (required)"]
+  B --> D["Parse Compare Period Report (required)"]
+  B --> E["Parse Database Capture Report (optional)"]
+  B --> F["Parse AWR Compare Report (optional)"]
+
+  C --> G["Build deterministic summary model"]
+  D --> G
+  E --> G
+  F --> G
+
+  G --> H["Overall Executive Summary"]
+  G --> I["Functional Assessment"]
+  G --> J["Performance Assessment"]
+
+  I --> I1["Capture validity (representative or not)"]
+  I --> I2["Divergence grading (<5 good, 5-20 moderate, >20 high)"]
+  I --> I3["Error-source localization (core vs background/non-critical)"]
+
+  J --> J1["DB Time outcome (primary)"]
+  J --> J2["CPU vs I/O vs wait classification"]
+  J --> J3["Top Bottlenecks (ADDM Comparison Insights)"]
+
+  K{"Use optional LLM-assisted narrative checked?"}
+  G --> K
+  K -->|No| L["Keep deterministic sections"]
+  K -->|Yes| M["Send structured payload to LLM API"]
+  M --> N["Apply LLM narrative overlay"]
+  M --> O["Capture token usage (prompt/completion/total)"]
+
+  P{"Include optional AWR deep-dive checked?"}
+  G --> P
+  P -->|No| Q["Skip deep-dive section"]
+  P -->|Yes| R["Render Detailed Drill-down (AWR Compare): waits, SQL, hypotheses, actions"]
+
+  L --> S["Render popup report HTML"]
+  N --> S
+  H --> S
+  I --> S
+  J --> S
+  R --> S
+  O --> S

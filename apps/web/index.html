@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Database Replay Executive Summary</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --ink: #1e293b;
+        --muted: #516070;
+        --panel: rgba(255, 252, 247, 0.9);
+        --accent: #9a3412;
+        --accent-soft: #fed7aa;
+        --line: rgba(30, 41, 59, 0.12);
+        --ok: #166534;
+        --warn: #92400e;
+        --risk: #991b1b;
+        --shadow: 0 24px 60px rgba(120, 53, 15, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font: 16px/1.5 "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(251, 191, 36, 0.35), transparent 28%),
+          radial-gradient(circle at top right, rgba(249, 115, 22, 0.22), transparent 24%),
+          linear-gradient(180deg, #fff8ef 0%, var(--bg) 100%);
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 40px 20px 64px;
+      }
+
+      h1 {
+        margin: 0 0 28px;
+        font-size: 18pt;
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .hero-shell {
+        position: relative;
+        overflow: hidden;
+        padding: 20px 20px 18px;
+      }
+
+      .top-controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 20px 22px;
+        margin-bottom: 18px;
+      }
+
+      .hero-shell img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 14px;
+      }
+
+      .ui-wrap {
+        position: relative;
+      }
+
+      .overlay-button {
+        position: absolute;
+        top: 58px;
+        left: 54%;
+        transform: translateX(-50%);
+      }
+
+      .overlay-button button {
+        border-radius: 999px;
+        padding: 10px 22px;
+        border: 4px solid #f97316;
+        background: white;
+        color: #7c2d12;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 700;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: white;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        background: var(--accent);
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: white;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .toggle-stack {
+        position: absolute;
+        top: 112px;
+        left: 54%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      .toggle-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+      }
+
+      .replay-id-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .replay-id-row label {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #7c2d12;
+      }
+
+      .replay-id-row input[type="text"] {
+        width: 72px;
+        height: 36px;
+        padding: 6px 8px;
+        border: 3px solid #f97316;
+        border-radius: 0;
+        background: white;
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
+      }
+
+      .note {
+        color: #7c2d12;
+        font-size: 0.96rem;
+        line-height: 1.3;
+        max-width: 660px;
+      }
+
+      .footer-note {
+        margin-top: 18px;
+        color: #7c2d12;
+        font-size: 1rem;
+        line-height: 1.35;
+        max-width: 560px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 2px solid #fb923c;
+        padding: 12px 14px;
+      }
+
+      .status {
+        margin-top: 18px;
+        color: #7c2d12;
+        font-size: 0.92rem;
+        background: rgba(255, 255, 255, 0.78);
+        border-radius: 10px;
+        padding: 8px 10px;
+      }
+
+      @media (max-width: 960px) {
+        .top-controls {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .overlay-button {
+          top: 36px;
+          left: 54%;
+        }
+
+        .toggle-row {
+          margin-top: 0;
+        }
+
+        .toggle-stack {
+          position: static;
+          transform: none;
+          width: 100%;
+        }
+
+        .ui-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Database Replay Executive Summary</h1>
+
+      <section class="panel hero-shell">
+        <div class="top-controls">
+          <div class="replay-id-row">
+            <label for="replayId">Enter Replay ID:</label>
+            <input id="replayId" type="text" placeholder="" />
+          </div>
+
+          <div class="note">
+            Notes: In Enterprise Manager integration, Replay ID is captured automatically from the current report context.
+          </div>
+        </div>
+
+        <div class="ui-wrap">
+          <img src="./home_ui_image.png" alt="Enterprise Manager Database Replay UI reference" />
+          <div class="overlay-button">
+            <button id="openSummary">Open Executive Summary</button>
+          </div>
+
+          <div class="toggle-stack">
+            <div class="toggle-row">
+              <input id="useLlm" type="checkbox" />
+              <label for="useLlm" style="margin:0;">
+                Use optional LLM-assisted narrative
+              </label>
+            </div>
+            <div class="toggle-row">
+              <input id="useAwrDeepDive" type="checkbox" />
+              <label for="useAwrDeepDive" style="margin:0;">
+                Include optional AWR deep-dive
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          Load DB Replay Report and Compare Period Report as required inputs. Add AWR Compare Period Report for deeper performance analysis and Database Capture Report for workload-validity checks. The summary opens in a separate browser window, just like the Enterprise Manager integration.
+        </div>
+
+        <div id="statusMessage" class="status"></div>
+      </section>
+    </main>
+
+    <script src="../../packages/core-parser/replay-summary-core.js"></script>
+    <script>
+      function formatTokenUsage(usage) {
+        if (!usage || typeof usage !== "object") {
+          return "Token usage unavailable";
+        }
+        const prompt = Number(usage.input_tokens);
+        const completion = Number(usage.output_tokens);
+        const total = Number(usage.total_tokens);
+        const parts = [];
+        if (Number.isFinite(total)) parts.push(`total ${total}`);
+        if (Number.isFinite(prompt)) parts.push(`prompt ${prompt}`);
+        if (Number.isFinite(completion)) parts.push(`completion ${completion}`);
+        return parts.length ? parts.join(" | ") : "Token usage unavailable";
+      }
+
+      async function fetchLlmSections(summary) {
+        if (window.location.protocol === "file:") {
+          throw new Error(
+            "The LLM-assisted mode cannot be used from file://. Open the app at http://127.0.0.1:4567/apps/web/index.html after starting apps/api/server.rb."
+          );
+        }
+
+        const response = await fetch("/api/llm-summary", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(window.ReplaySummaryApp.buildLLMSummaryPayload(summary)),
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          const text = await response.text();
+          throw new Error(
+            `LLM proxy returned a non-JSON response. Make sure apps/api/server.rb is restarted and the local server is serving the latest code. Response started with: ${text.slice(0, 120)}`
+          );
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "LLM summary request failed.");
+        }
+        return {
+          llmSections: data.llm_sections,
+          usage: data.usage || null,
+          model: data.model || null,
+        };
+      }
+
+      async function fetchReplayReports(replayId) {
+        const response = await fetch(`/api/replay-reports?replay_id=${encodeURIComponent(replayId)}`);
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          const text = await response.text();
+          throw new Error(
+            `Replay report endpoint returned a non-JSON response. Restart apps/api/server.rb so /api/replay-reports is available. Response started with: ${text.slice(0, 120)}`
+          );
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || `Unable to load reports for Replay ID ${replayId}.`);
+        }
+        return data;
+      }
+
+      function improveErrorMessage(error) {
+        const message = String(error?.message || error || "");
+        if (message.includes("Failed to fetch")) {
+          return new Error(
+            "Unable to reach the local LLM proxy. Make sure apps/api/server.rb is running, then open the app at http://127.0.0.1:4567/apps/web/index.html instead of the local file path."
+          );
+        }
+        return error;
+      }
+
+      document.getElementById("openSummary").addEventListener("click", async () => {
+        const popup = window.open("", "replay-summary-preview", "width=1200,height=900");
+        try {
+          if (!popup) {
+            throw new Error("Popup blocked. Allow popups for this page.");
+          }
+          popup.document.open();
+          popup.document.write("<p style='font:16px sans-serif;padding:24px'>Building executive replay summary...</p>");
+          popup.document.close();
+
+          const replayId = document.getElementById("replayId").value.trim();
+          if (!replayId) {
+            throw new Error("Please enter a Replay ID.");
+          }
+          document.getElementById("statusMessage").textContent = `Loading reports for Replay ID ${replayId}...`;
+
+          const reportBundle = await fetchReplayReports(replayId);
+          const dbReplayHtml = reportBundle.db_replay_html;
+          const compareHtml = reportBundle.compare_html;
+          const awrHtml = reportBundle.awr_html;
+
+          const summary = window.ReplaySummaryApp.buildReplaySummary({
+            replayId,
+            dbReplayHtml,
+            compareHtml,
+            awrHtml,
+            captureHtml: reportBundle.capture_html,
+            options: {
+              includeAwrDeepDive: document.getElementById("useAwrDeepDive").checked,
+            },
+          });
+
+          let finalSummary = summary;
+          if (document.getElementById("useLlm").checked) {
+            popup.document.open();
+            popup.document.write("<p style='font:16px sans-serif;padding:24px'>Building executive replay summary with LLM-assisted narrative...</p>");
+            popup.document.close();
+            const llmResult = await fetchLlmSections(summary);
+            finalSummary = window.ReplaySummaryApp.applyLLMSections(summary, llmResult.llmSections);
+            finalSummary = {
+              ...finalSummary,
+              llm: {
+                used: true,
+                model: llmResult.model || null,
+                usage: llmResult.usage || null,
+              },
+            };
+            document.getElementById("statusMessage").textContent =
+              `LLM narrative generated (${formatTokenUsage(llmResult.usage)}).`;
+          }
+
+          const loadedFiles = [reportBundle.files.db_replay, reportBundle.files.compare]
+            .concat(reportBundle.files.awr ? [reportBundle.files.awr] : [])
+            .concat(reportBundle.files.capture ? [reportBundle.files.capture] : [])
+            .filter(Boolean);
+          const llmUsageSuffix =
+            finalSummary.llm?.used ? ` LLM tokens: ${formatTokenUsage(finalSummary.llm.usage)}.` : "";
+          document.getElementById("statusMessage").textContent =
+            `Loaded ${loadedFiles.join(", ")}.${llmUsageSuffix}`;
+          window.ReplaySummaryApp.openSummaryWindow(finalSummary, popup);
+        } catch (error) {
+          const improved = improveErrorMessage(error);
+          document.getElementById("statusMessage").textContent = improved.message || String(improved);
+          console.error(improved);
+          window.ReplaySummaryApp.openErrorWindow(improved, popup || undefined);
+        }
+      });
+    </script>
+  </body>
+</html>

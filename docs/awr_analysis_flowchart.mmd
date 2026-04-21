@@ -1,0 +1,33 @@
+flowchart TD
+    A["Load Inputs<br/>DB Replay + Compare Period + AWR Compare"] --> B["Validate Report Structure<br/>Detect sections by semantic headers/summary"]
+    B --> C{"Required Sections Present?"}
+    C -- "No" --> C1["Mark Missing Data<br/>Degrade confidence / partial output"]
+    C -- "Yes" --> D["Extract Core Metrics<br/>DB Time, DB CPU, AAS, Load Profile, Time Model"]
+
+    D --> E["Data Quality Guardrails<br/>Flag non-positive baseline, odd %Diff, pairing artifacts"]
+    E --> F["Workload Comparison<br/>per sec + per txn<br/>heavier/lighter/similar"]
+
+    F --> G["Time Model Split<br/>CPU-bound / Wait-bound / Mixed"]
+    G --> H["Wait Classes Analysis<br/>Use Diff %DB time<br/>find top increase/decrease"]
+    H --> I["Wait Events Drilldown<br/>Top by 2nd %DB time + largest Diff"]
+
+    I --> J{"Primary Regression Driver?"}
+    J -- "Commit" --> J1["Check log file sync / log file parallel write<br/>commit frequency vs redo I/O"]
+    J -- "User I/O" --> J2["Check read events + SQL by I/O"]
+    J -- "Concurrency" --> J3["Check locks, buffer/latch/mutex contention"]
+    J -- "CPU" --> J4["Check SQL by CPU"]
+    J -- "Other/Mixed" --> J5["Track dominant wait classes/events"]
+
+    J1 --> K["SQL Comparison<br/>Elapsed / CPU / I/O / Executions<br/>new SQL + execution growth"]
+    J2 --> K
+    J3 --> K
+    J4 --> K
+    J5 --> K
+
+    K --> L["Correlation Step<br/>Waits ↔ SQL ↔ workload pattern"]
+    C1 --> L
+    L --> N{"Use LLM Narrative?"}
+    N -- "Yes" --> N1["LLM Rewrite Layer<br/>Convert structured facts into executive prose"]
+    N -- "No" --> N2["Rule-Based Renderer<br/>Use deterministic template output"]
+    N1 --> M["Generate Output<br/>Executive summary, key differences,<br/>primary bottleneck, evidence, hypotheses,<br/>validation steps, prioritized actions"]
+    N2 --> M

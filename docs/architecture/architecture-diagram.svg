@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180" role="img" aria-labelledby="title desc">
+  <title id="title">Database Replay Executive Summary Architecture</title>
+  <desc id="desc">Updated architecture diagram for the prototype showing browser UI, Replay ID based report loading through a local Ruby server, deterministic report parsing and scoring, optional OpenAI LLM narrative generation, and popup summary output.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="55%" stop-color="#fffef9"/>
+      <stop offset="100%" stop-color="#effcf7"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f8fffc"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#475569"/>
+    </marker>
+    <style>
+      .title { font: 700 38px Avenir Next, Segoe UI, Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 500 17px Avenir Next, Segoe UI, Arial, sans-serif; fill: #5b6b7c; }
+      .group { fill: rgba(255,255,255,0.72); stroke: rgba(23,32,51,0.10); stroke-width: 2; }
+      .group-title { font: 700 22px Avenir Next, Segoe UI, Arial, sans-serif; fill: #172033; }
+      .box { fill: url(#panel); stroke: rgba(23,32,51,0.14); stroke-width: 2; rx: 24; filter: url(#shadow); }
+      .entry { fill: #fffdf7; stroke: rgba(154,52,18,0.20); }
+      .server { fill: #f8fbff; stroke: rgba(37,99,235,0.20); }
+      .core { fill: #f3fffb; stroke: rgba(15,118,110,0.24); }
+      .llm { fill: #fffafc; stroke: rgba(190,24,93,0.18); }
+      .output { fill: #fcfffb; stroke: rgba(22,101,52,0.18); }
+      .label { font: 700 20px Avenir Next, Segoe UI, Arial, sans-serif; fill: #172033; }
+      .text { font: 500 15px Avenir Next, Segoe UI, Arial, sans-serif; fill: #526174; }
+      .small { font: 700 13px Avenir Next, Segoe UI, Arial, sans-serif; fill: #0f766e; }
+      .line { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1180" fill="url(#bg)"/>
+
+  <text x="60" y="70" class="title">Database Replay Executive Summary</text>
+  <text x="60" y="102" class="subtitle">Replay ID driven local demo with deterministic report analysis and optional OpenAI-assisted narrative rewrite</text>
+
+  <rect x="40" y="145" width="470" height="410" rx="32" class="group"/>
+  <text x="72" y="188" class="group-title">Browser Demo UI</text>
+
+  <rect x="72" y="220" width="405" height="110" rx="24" class="box entry"/>
+  <text x="105" y="262" class="label">apps/web/index.html</text>
+  <text x="105" y="287" class="text">Enterprise-style local demo page</text>
+  <text x="105" y="309" class="text">Enter Replay ID, open popup, optional LLM checkbox</text>
+
+  <rect x="72" y="360" width="190" height="92" rx="24" class="box entry"/>
+  <text x="110" y="398" class="label">Replay ID</text>
+  <text x="110" y="421" class="text">User enters 1 / 2 / 3</text>
+
+  <rect x="287" y="360" width="190" height="92" rx="24" class="box entry"/>
+  <text x="323" y="398" class="label">Open Summary</text>
+  <text x="320" y="421" class="text">Opens popup window</text>
+
+  <rect x="72" y="475" width="405" height="56" rx="20" class="box entry"/>
+  <text x="106" y="511" class="text">LLM mode can be toggled on for narrative rewriting only</text>
+
+  <rect x="560" y="145" width="470" height="410" rx="32" class="group"/>
+  <text x="592" y="188" class="group-title">Local Ruby Server</text>
+
+  <rect x="592" y="220" width="405" height="110" rx="24" class="box server"/>
+  <text x="628" y="262" class="label">apps/api/server.rb</text>
+  <text x="628" y="287" class="text">WEBrick local server on 127.0.0.1:4567</text>
+  <text x="628" y="309" class="text">Serves apps/web/index.html and backend API endpoints</text>
+
+  <rect x="592" y="360" width="190" height="104" rx="24" class="box server"/>
+  <text x="620" y="398" class="label">/api/replay-reports</text>
+  <text x="625" y="421" class="text">Uses Replay ID</text>
+  <text x="620" y="443" class="text">Loads local report files</text>
+
+  <rect x="807" y="360" width="190" height="104" rx="24" class="box server"/>
+  <text x="842" y="398" class="label">/api/llm-summary</text>
+  <text x="835" y="421" class="text">Optional endpoint</text>
+  <text x="839" y="443" class="text">Calls OpenAI API</text>
+
+  <rect x="592" y="490" width="405" height="40" rx="20" class="box server"/>
+  <text x="632" y="516" class="text">Reads folders under /tests/fixtures/dbrep_reports/&lt;ReplayID&gt;/</text>
+
+  <rect x="1080" y="145" width="680" height="710" rx="32" class="group"/>
+  <text x="1112" y="188" class="group-title">Analysis and Output Pipeline</text>
+
+  <rect x="1112" y="220" width="280" height="120" rx="24" class="box core"/>
+  <text x="1160" y="264" class="label">Report Inputs</text>
+  <text x="1160" y="289" class="text">DB Replay Report.html</text>
+  <text x="1160" y="311" class="text">Compare Period Report.html</text>
+  <text x="1160" y="333" class="text">AWR Compare Period Report.html</text>
+
+  <rect x="1430" y="220" width="298" height="120" rx="24" class="box core"/>
+  <text x="1475" y="264" class="label">DOM Parsing Layer</text>
+  <text x="1475" y="289" class="text">parseDbReplayReport</text>
+  <text x="1475" y="311" class="text">parseCompareReport</text>
+  <text x="1475" y="333" class="text">parseAwrReport</text>
+
+  <rect x="1112" y="390" width="616" height="130" rx="24" class="box core"/>
+  <text x="1330" y="434" text-anchor="middle" class="label">Deterministic Analysis Engine</text>
+  <text x="1180" y="460" class="text">Extracts status, versions, DB Time, User Calls, finished sessions,</text>
+  <text x="1180" y="482" class="text">divergence, CPU and memory differences, parameter changes, waits, parsing, ADDM</text>
+  <text x="1180" y="504" class="text">Builds verdict, risk rating, executive sections, and highlighted findings</text>
+
+  <rect x="1112" y="560" width="300" height="130" rx="24" class="box llm"/>
+  <text x="1170" y="604" class="label">Optional LLM Narrative</text>
+  <text x="1170" y="629" class="text">Structured metrics are sent to</text>
+  <text x="1170" y="651" class="text">OpenAI Responses API for narrative rewrite only</text>
+  <text x="1170" y="673" class="text">No raw HTML analysis by the LLM</text>
+
+  <rect x="1448" y="560" width="280" height="130" rx="24" class="box core"/>
+  <text x="1506" y="604" class="label">HTML Renderer</text>
+  <text x="1506" y="629" class="text">renderSummaryHtml</text>
+  <text x="1506" y="651" class="text">Applies emphasis and final layout</text>
+  <text x="1506" y="673" class="text">for executive presentation</text>
+
+  <rect x="1112" y="730" width="300" height="92" rx="24" class="box output"/>
+  <text x="1187" y="770" class="label">Summary Popup</text>
+  <text x="1187" y="794" class="text">Separate browser window</text>
+
+  <rect x="1448" y="730" width="280" height="92" rx="24" class="box output"/>
+  <text x="1521" y="770" class="label">Error Popup</text>
+  <text x="1515" y="794" class="text">Readable fallback error details</text>
+
+  <rect x="40" y="610" width="1720" height="500" rx="32" class="group"/>
+  <text x="72" y="653" class="group-title">What The Implementation Demonstrates</text>
+
+  <rect x="72" y="688" width="520" height="156" rx="24" class="box output"/>
+  <text x="110" y="730" class="label">Grounded Analysis</text>
+  <text x="110" y="755" class="text">The core assessment is rule-based and uses parsed Oracle report data.</text>
+  <text x="110" y="777" class="text">This keeps verdicts tied to real metrics like DB Time, divergence,</text>
+  <text x="110" y="799" class="text">system differences, and replay completion fidelity.</text>
+
+  <rect x="624" y="688" width="520" height="156" rx="24" class="box output"/>
+  <text x="662" y="730" class="label">Executive Presentation Layer</text>
+  <text x="662" y="755" class="text">The popup report is optimized for demos: short executive summary,</text>
+  <text x="662" y="777" class="text">structured verdict, key findings, likely causes, and an appendix</text>
+  <text x="662" y="799" class="text">that explains prototype-only scoring logic.</text>
+
+  <rect x="1176" y="688" width="552" height="156" rx="24" class="box output"/>
+  <text x="1214" y="730" class="label">Hybrid AI Design</text>
+  <text x="1214" y="755" class="text">Optional LLM use is intentionally limited to narrative improvement.</text>
+  <text x="1214" y="777" class="text">The LLM rewrites sections like Executive Summary and Key Findings,</text>
+  <text x="1214" y="799" class="text">while deterministic logic still controls the factual grounding.</text>
+
+  <rect x="72" y="872" width="1656" height="174" rx="24" class="box output"/>
+  <text x="110" y="914" class="label">Current End-to-End Flow</text>
+  <text x="110" y="939" class="text">1. User opens the prototype in a browser and enters a Replay ID.</text>
+  <text x="110" y="961" class="text">2. apps/web/index.html asks apps/api/server.rb to load the three reports from the matching local folder.</text>
+  <text x="110" y="983" class="text">3. packages/core-parser/replay-summary-core.js parses the reports and produces deterministic findings, validity, and verdict.</text>
+  <text x="110" y="1005" class="text">4. If enabled, the structured metrics are sent to OpenAI for a cleaner narrative rewrite.</text>
+  <text x="110" y="1027" class="text">5. The final executive summary is rendered in a separate popup window for review or demo.</text>
+
+  <path class="line" d="M477 275 C520 275, 540 275, 592 275"/>
+  <path class="line" d="M687 330 L687 360"/>
+  <path class="line" d="M902 330 L902 360"/>
+  <path class="line" d="M997 412 C1048 412, 1060 280, 1112 280"/>
+  <path class="line" d="M1392 280 L1430 280"/>
+  <path class="line" d="M1580 340 L1580 390"/>
+  <path class="line" d="M1420 455 C1370 455, 1300 455, 1260 560"/>
+  <path class="line" d="M1420 455 C1525 455, 1588 455, 1588 560"/>
+  <path class="line" d="M1412 625 L1448 625"/>
+  <path class="line" d="M1262 690 L1262 730"/>
+  <path class="line" d="M1588 690 L1588 730"/>
+
+  <text x="74" y="577" class="small">Current demo uses Replay ID folder lookup through the local server</text>
+  <text x="1114" y="844" class="small">Optional LLM path improves wording but not grounding</text>
+</svg>

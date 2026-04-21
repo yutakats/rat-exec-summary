@@ -1,0 +1,198 @@
+SQL> VAR v_clob CLOB
+SQL> BEGIN dbms_workload_replay.compare_period_report(replay_id1 => 1, replay_id2 => null, format => DBMS_WORKLOAD_REPLAY.TYPE_HTML, result => :v_clob);
+  2  END;
+  3  /
+
+PL/SQL procedure successfully completed.
+
+SQL> print v_clob;
+<html lang="en">                                                                                                                                                                                        
+  <head>                                                                                                                                                                                                
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>                                                                                                                               
+    <title> Compare Period Report </title>                                                                                                                                                              
+    <script type="text/javascript">                                                                                                                                                                     
+                                                                                                                                                                                                        
+          function toggle_visibility(id) {                                                                                                                                                              
+            var e      = document.getElementById(id);                                                                                                                                                   
+            var e_show = document.getElementById(id + '_show');                                                                                                                                         
+            var e_hide = document.getElementById(id + '_hide');                                                                                                                                         
+            var e_sum  = document.getElementById(id + '_summary');                                                                                                                                      
+            if(e.style.display == 'none') {                                                                                                                                                             
+              e.style.display      = '';                                                                                                                                                                
+              if(e_show)                                                                                                                                                                                
+              {                                                                                                                                                                                         
+                e_show.style.display = 'none';                                                                                                                                                          
+              }                                                                                                                                                                                         
+              if(e_hide)                                                                                                                                                                                
+              {                                                                                                                                                                                         
+                e_hide.style.display = '';                                                                                                                                                              
+              }                                                                                                                                                                                         
+              if(e_sum)                                                                                                                                                                                 
+              {                                                                                                                                                                                         
+                e_sum.style.display = 'none';                                                                                                                                                           
+              }                                                                                                                                                                                         
+            }                                                                                                                                                                                           
+            else {                                                                                                                                                                                      
+              e.style.display      = 'none';                                                                                                                                                            
+              if(e_show)                                                                                                                                                                                
+              {                                                                                                                                                                                         
+                e_show.style.display = '';                                                                                                                                                              
+              }                                                                                                                                                                                         
+              if(e_hide)                                                                                                                                                                                
+              {                                                                                                                                                                                         
+                e_hide.style.display = 'none';                                                                                                                                                          
+              }                                                                                                                                                                                         
+              if(e_sum)                                                                                                                                                                                 
+              {                                                                                                                                                                                         
+                e_sum.style.display = '';                                                                                                                                                               
+              }                                                                                                                                                                                         
+            }                                                                                                                                                                                           
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          function hide_element(id) {                                                                                                                                                                   
+            var e      = document.getElementById(id);                                                                                                                                                   
+            var e_show = document.getElementById(id + '_show');                                                                                                                                         
+            var e_hide = document.getElementById(id + '_hide');                                                                                                                                         
+            var e_sum  = document.getElementById(id + '_summary');                                                                                                                                      
+            e.style.display      = 'none';                                                                                                                                                              
+            if(e_show)                                                                                                                                                                                  
+            {                                                                                                                                                                                           
+              e_show.style.display = '';                                                                                                                                                                
+            }                                                                                                                                                                                           
+            if(e_hide)                                                                                                                                                                                  
+            {                                                                                                                                                                                           
+              e_hide.style.display = 'none';                                                                                                                                                            
+            }                                                                                                                                                                                           
+            if(e_sum)                                                                                                                                                                                   
+            {                                                                                                                                                                                           
+              e_sum.style.display = '';                                                                                                                                                                 
+            }                                                                                                                                                                                           
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          function show_element(id) {                                                                                                                                                                   
+            var e      = document.getElementById(id);                                                                                                                                                   
+            var e_show = document.getElementById(id + '_show');                                                                                                                                         
+            var e_hide = document.getElementById(id + '_hide');                                                                                                                                         
+            var e_sum  = document.getElementById(id + '_summary');                                                                                                                                      
+            e.style.display      = '';                                                                                                                                                                  
+            if(e_show)                                                                                                                                                                                  
+            {                                                                                                                                                                                           
+              e_show.style.display = 'none';                                                                                                                                                            
+            }                                                                                                                                                                                           
+            if(e_hide)                                                                                                                                                                                  
+            {                                                                                                                                                                                           
+              e_hide.style.display = '';                                                                                                                                                                
+            }                                                                                                                                                                                           
+            if(e_sum)                                                                                                                                                                                   
+            {                                                                                                                                                                                           
+              e_sum.style.display = 'none';                                                                                                                                                             
+            }                                                                                                                                                                                           
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+        </script>                                                                                                                                                                                       
+    <style type="text/css">                                                                                                                                                                             
+                                                                                                                                                                                                        
+          body, table {                                                                                                                                                                                 
+            font-size:          8pt;                                                                                                                                                                    
+            font-family:        Verdana,Arial;                                                                                                                                                          
+            text-decoration:    none;                                                                                                                                                                   
+            color:              #000000;                                                                                                                                                                
+            background-color:   #ffffff;                                                                                                                                                                
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          th {                                                                                                                                                                                          
+            color:            #ffffff;                                                                                                                                                                  
+            background-color: #0066CC;                                                                                                                                                                  
+            padding:          2px;                                                                                                                                                                      
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          td {                                                                                                                                                                                          
+            padding:          2px;                                                                                                                                                                      
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .report_title {                                                                                                                                                                               
+            font-size:          20pt;                                                                                                                                                                   
+            font-weight:        bold;                                                                                                                                                                   
+            color:              #336699;                                                                                                                                                                
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .section_title {                                                                                                                                                                              
+            font-size:          16pt;                                                                                                                                                                   
+            font-weight:        bold;                                                                                                                                                                   
+            color:              #336699;                                                                                                                                                                
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .subsection_title {                                                                                                                                                                           
+            font-size:          10pt;                                                                                                                                                                   
+            font-weight:        bold;                                                                                                                                                                   
+            color:              #336699;                                                                                                                                                                
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .no_data_message {                                                                                                                                                                            
+            font-size:          8pt;                                                                                                                                                                    
+            font-weight:        bold;                                                                                                                                                                   
+            padding-left:       4px;                                                                                                                                                                    
+            color:              #000000;                                                                                                                                                                
+            background-color:   #ffffff;                                                                                                                                                                
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .left {                                                                                                                                                                                       
+            background-color:  #e2edb7;                                                                                                                                                                 
+           }                                                                                                                                                                                            
+          .right {                                                                                                                                                                                      
+            background-color:  #c8c8c8;                                                                                                                                                                 
+          }                                                                                                                                                                                             
+          .diff_positive {                                                                                                                                                                              
+            font-weight:bold;                                                                                                                                                                           
+            color      :green;                                                                                                                                                                          
+           }                                                                                                                                                                                            
+          .diff_negative {                                                                                                                                                                              
+            font-weight:bold;                                                                                                                                                                           
+            color       :#e40909;                                                                                                                                                                       
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .hide_this {                                                                                                                                                                                  
+            display:            none;                                                                                                                                                                   
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .row0 {                                                                                                                                                                                       
+            background-color:  #ffffbb;                                                                                                                                                                 
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .row1 {                                                                                                                                                                                       
+            background-color:  #ffffff;                                                                                                                                                                 
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+          .hide_show {                                                                                                                                                                                  
+            text-decoration:    none;                                                                                                                                                                   
+          }                                                                                                                                                                                             
+                                                                                                                                                                                                        
+        </style>                                                                                                                                                                                        
+  </head>                                                                                                                                                                                               
+  <body>                                                                                                                                                                                                
+    <div class="report_title">                                                                                                                                                                          
+          Compare Period Report:                                                                                                                                                                        
+          </div>                                                                                                                                                                                        
+    <hr/>                                                                                                                                                                                               
+    <p/>                                                                                                                                                                                                
+    <div>                                                                                                                                                                                               
+      <a href="#anchor_collapse_all" id="collapse_all" onclick="               t                                                                                                                        
+oggle_visibility('collapse_all');               toggle_visibility('expand_all');                                                                                                                        
+             ">                                                                                                                                                                                         
+            Collapse all sections                                                                                                                                                                       
+          </a>                                                                                                                                                                                          
+      <a href="#anchor_expand_all" id="expand_all" style="display: none;" onclic                                                                                                                        
+k="               toggle_visibility('collapse_all');               toggle_visibi                                                                                                                        
+lity('expand_all');             ">                                                                                                                                                                      
+            Expand all sections                                                                                                                                                                         
+          </a>                                                                                                                                                                                          
+    </div>                                                                                                                                                                                              
+    <div class="subsection_title">Replay &quot;ratpoc_ro&quot; with ID 1 had les                                                                                                                        
+s than five minutes of database time</div>                                                                                                                                                              
+    <br/>                                                                                                                                                                                               
+    <b> End of Report. </b>                                                                                                                                                                             
+  </body>                                                                                                                                                                                               
+</html>                                                                                                                                                                                                 
+                                                                                                                                                                                                        
+
+SQL> spool off

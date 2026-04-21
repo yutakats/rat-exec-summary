@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oracle.internal/schemas/replay-summary.schema.json",
+  "title": "ReplaySummary",
+  "type": "object",
+  "required": [
+    "replayId",
+    "replayName",
+    "status",
+    "riskLevel",
+    "verdict",
+    "metrics",
+    "sections"
+  ],
+  "properties": {
+    "replayId": { "type": "string" },
+    "replayName": { "type": "string" },
+    "status": { "type": "string" },
+    "riskLevel": { "type": "string" },
+    "verdict": { "type": "string" },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sections": {
+      "type": "object",
+      "required": ["executive_summary", "key_findings", "recommended_actions"],
+      "properties": {
+        "executive_summary": { "type": "string" },
+        "key_findings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "problems_detected": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "likely_causes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommended_actions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

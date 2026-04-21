@@ -1,0 +1,641 @@
+SQL> select dbms_workload_capture.report(52,'HTML') from dual;
+<html lang="en"><head><title>Database Capture Report</title>                    
+<style type="text/css">                                                         
+body.awr {font:bold 10pt Arial,Helvetica,Geneva,sans-serif;color:black; backgrou
+nd:White;}                                                                      
+pre.awr  {font:8pt Courier;color:black; background:White;}                      
+pre_sqltext.awr  {white-space: pre-wrap;}                                       
+h1.awr   {font:bold 20pt Arial,Helvetica,Geneva,sans-serif;color:#336699;backgro
+und-color:White;border-bottom:1px solid #cccc99;margin-top:0pt; margin-bottom:0p
+t;padding:0px 0px 0px 0px;}                                                     
+h2.awr   {font:bold 18pt Arial,Helvetica,Geneva,sans-serif;color:#336699;backgro
+und-color:White;margin-top:4pt; margin-bottom:0pt;}                             
+h3.awr {font:bold 16pt Arial,Helvetica,Geneva,sans-serif;color:#336699;backgroun
+d-color:White;margin-top:4pt; margin-bottom:0pt;}                               
+li.awr {font: 8pt Arial,Helvetica,Geneva,sans-serif; color:black; background:Whi
+te;}                                                                            
+th.awrnobg {font:bold 8pt Arial,Helvetica,Geneva,sans-serif; color:black; backgr
+ound:White;padding-left:4px; padding-right:4px;padding-bottom:2px}              
+th.awrbg {font:bold 8pt Arial,Helvetica,Geneva,sans-serif; color:White; backgrou
+nd:#0066CC;padding-left:4px; padding-right:4px;padding-bottom:2px}              
+td.awrnc {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:Whit
+e;vertical-align:top;}                                                          
+td.awrc    {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:#F
+FFFCC; vertical-align:top;}                                                     
+td.awrnclb {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:Wh
+ite;vertical-align:top;border-left: thin solid black;}                          
+td.awrncbb {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:Wh
+ite;vertical-align:top;border-left: thin solid black;border-right: thin solid bl
+ack;}                                                                           
+td.awrncrb {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:Wh
+ite;vertical-align:top;border-right: thin solid black;}                         
+td.awrcrb    {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+#FFFFCC; vertical-align:top;border-right: thin solid black;}                    
+td.awrclb    {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+#FFFFCC; vertical-align:top;border-left: thin solid black;}                     
+td.awrcbb    {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+#FFFFCC; vertical-align:top;border-left: thin solid black;border-right: thin sol
+id black;}                                                                      
+a.awr {font:bold 8pt Arial,Helvetica,sans-serif;color:#663300; vertical-align:to
+p;margin-top:0pt; margin-bottom:0pt;}                                           
+td.awrnct {font:8pt Arial,Helvetica,Geneva,sans-serif;border-top: thin solid bla
+ck;color:black;background:White;vertical-align:top;}                            
+td.awrct   {font:8pt Arial,Helvetica,Geneva,sans-serif;border-top: thin solid bl
+ack;color:black;background:#FFFFCC; vertical-align:top;}                        
+td.awrnclbt  {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+White;vertical-align:top;border-top: thin solid black;border-left: thin solid bl
+ack;}                                                                           
+td.awrncbbt  {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+White;vertical-align:top;border-left: thin solid black;border-right: thin solid 
+black;border-top: thin solid black;}                                            
+td.awrncrbt {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:W
+hite;vertical-align:top;border-top: thin solid black;border-right: thin solid bl
+ack;}                                                                           
+td.awrcrbt     {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;backgroun
+d:#FFFFCC; vertical-align:top;border-top: thin solid black;border-right: thin so
+lid black;}                                                                     
+td.awrclbt     {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;backgroun
+d:#FFFFCC; vertical-align:top;border-top: thin solid black;border-left: thin sol
+id black;}                                                                      
+td.awrcbbt   {font:8pt Arial,Helvetica,Geneva,sans-serif;color:black;background:
+#FFFFCC; vertical-align:top;border-top: thin solid black;border-left: thin solid
+ black;border-right: thin solid black;}                                         
+table.tdiff {  border_collapse: collapse; }                                     
+table.tscl {width: 600;}                                                        
+table.tscl tbody, table.tscl thead { display: block; }                          
+table.tscl thead tr th {height: 12px;line-height: 12px;}                        
+table.tscl tbody { height: 100px;overflow-y: auto; overflow-x: hidden;}         
+table.tscl tbody td, thead th {width: 200;}                                     
+.hidden   {position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflo
+w:hidden;}                                                                      
+.pad   {margin-left:17px;}                                                      
+.doublepad {margin-left:34px;}                                                  
+</style></head><body class="awr">                                               
+<h1 class="awr">                                                                
+                                                                                
+Database Capture Report For TLRAPATPDB                                          
+                                                                                
+</h1>                                                                           
+<p />                                                                           
+<table border="1" width="500" summary="capture database">                       
+<tr><th class="awrbg" scope="col">DB Name</th><th class="awrbg" scope="col">DB I
+d</th><th class="awrbg" scope="col">Release</th><th class="awrbg" scope="col">RA
+C</th><th class="awrbg" scope="col">Capture Name</th><th class="awrbg" scope="co
+l">Status</th></tr>                                                             
+<tr><td scope="row" class='awrnc'>TLRAPATPDB</td><td align="right" class='awrnc'
+>2724638826</td><td class='awrnc'>19.29.0.0.0</td><td class='awrnc'>YES</td><td 
+class='awrnc'>capture_test_11242025</td><td class='awrnc'>COMPLETED</td></tr>   
+</table>                                                                        
+<p />                                                                           
+<p />                                                                           
+<table border="1" summary="capture summary">                                    
+<tr><th class="awrbg" scope="col">Information</th><th class="awrbg" scope="col">
+Capture</th></tr>                                                               
+<tr><td scope="row" class='awrc'>Start time:</td><td align="right" class='awrc'>
+24-Nov-25 15:42:36 (SCN = 3147071374688)</td></tr>                              
+<tr><td scope="row" class='awrnc'>End time:</td><td align="right" class='awrnc'>
+24-Nov-25 16:42:37 (SCN = 3147071462465)</td></tr>                              
+<tr><td scope="row" class='awrc'>Duration:</td><td align="right" class='awrc'>1 
+hour  1 second</td></tr>                                                        
+<tr><td scope="row" class='awrnc'>Capture size:</td><td align="right" class='awr
+nc'>19.63 MB</td></tr>                                                          
+<tr><td scope="row" class='awrc'>PL/SQL subcall capture size:</td><td align="rig
+ht" class='awrc'>1.27 MB</td></tr>                                              
+<tr><td scope="row" class='awrnc'>Directory object:</td><td align="right" class=
+'awrnc'>WRC_DIR6</td></tr>                                                      
+<tr><td scope="row" class='awrc'>Directory path:</td><td align="right" class='aw
+rc'>/acfs_export/work/orat/wkdir6</td></tr>                                     
+<tr><td scope="row" class='awrnc'>Directory shared in RAC:</td><td align="right"
+ class='awrnc'>TRUE</td></tr>                                                   
+<tr><td scope="row" class='awrc'>Filters used:</td><td align="right" class='awrc
+'>0 EXCLUSION filters</td></tr>                                                 
+<tr><td scope="row" class='awrnc'>PL/SQL mode:</td><td align="right" class='awrn
+c'>EXTENDED</td></tr>                                                           
+<tr><td scope="row" class='awrc'>Encryption algorithm:</td><td align="right" cla
+ss='awrc'>&#160;</td></tr>                                                      
+</table>                                                                        
+<p />                                                                           
+<a class="awr" name="top"></a>                                                  
+<h2 class="awr">                                                                
+DB Capture Report                                                               
+</h2>                                                                           
+<ul>                                                                            
+<li class="awr"><a class="awr" href="#11001">Capture Statistics</a></li>        
+<li class="awr"><a class="awr" href="#502">Workload Captured</a></li>           
+<li class="awr"><a class="awr" href="#503">Workload Not Captured - Contains Unre
+playable Calls</a></li>                                                         
+<li class="awr"><a class="awr" href="#504">Workload Not Captured - User Filtered
+</a></li>                                                                       
+<li class="awr"><a class="awr" href="#505">Workload Not Captured - DB Scheduler 
+Jobs and Background Activity</a></li>                                           
+<li class="awr"><a class="awr" href="#99997">SQL Text</a></li>                  
+<li class="awr"><a class="awr" href="#11002">Workload Filters</a></li>          
+</ul>                                                                           
+<br /><a class="awr" href="#top">Back to Top</a><hr /><p />                     
+<a class="awr" name="11001"></a>                                                
+<h3 class="awr">Captured Workload Statistics</h3>                               
+<ul>                                                                            
+<li class="awr"> 'Value' represents the corresponding statistic aggregated      
+  across the entire captured database workload. </li>                           
+<li class="awr"> '% Total' is the percentage of 'Value' over the corresponding  
+      system-wide aggregated total.</li>                                        
+</ul>                                                                           
+<table border="1" summary="captured workload statistics"><tr><th class="awrbg" s
+cope="col">Statistic Name</th><th class="awrbg" scope="col">Value</th><th class=
+"awrbg" scope="col">% Total</th></tr>                                           
+<tr><td scope="row" class='awrc'>DB time (secs)</td><td align="right" class='awr
+c'>977.04</td><td align="right" class='awrc'>100.00</td></tr>                   
+<tr><td scope="row" class='awrnc'>Average Active Sessions</td><td align="right" 
+class='awrnc'>0.27</td><td align="right" class='awrnc'>&#160;</td></tr>         
+<tr><td scope="row" class='awrc'>User calls captured</td><td align="right" class
+='awrc'>95990</td><td align="right" class='awrc'>100.00</td></tr>               
+<tr><td scope="row" class='awrnc'>User calls captured with Errors</td><td align=
+"right" class='awrnc'>124</td><td align="right" class='awrnc'>&#160;</td></tr>  
+<tr><td scope="row" class='awrc'>PL/SQL calls captured</td><td align="right" cla
+ss='awrc'>136</td><td align="right" class='awrc'>&#160;</td></tr>               
+<tr><td scope="row" class='awrnc'>PL/SQL DB time (secs)</td><td align="right" cl
+ass='awrnc'>4.58</td><td align="right" class='awrnc'>0.47</td></tr>             
+<tr><td scope="row" class='awrc'>PL/SQL subcalls captured</td><td align="right" 
+class='awrc'>2901</td><td align="right" class='awrc'>&#160;</td></tr>           
+<tr><td scope="row" class='awrnc'>Session logins</td><td align="right" class='aw
+rnc'>7371</td><td align="right" class='awrnc'>100.00</td></tr>                  
+<tr><td scope="row" class='awrc'>Transactions</td><td align="right" class='awrc'
+>602</td><td align="right" class='awrc'>100.00</td></tr>                        
+</table><p />                                                                   
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="502"></a>                                                  
+<h2 class="awr">                                                                
+Workload Captured                                                               
+</h2>                                                                           
+<ul>                                                                            
+<li class="awr"><a class="awr" href="#11101">Top Events Captured</a></li>       
+<li class="awr"><a class="awr" href="#11102">Top Service/Module Captured</a></li
+>                                                                               
+<li class="awr"><a class="awr" href="#11103">Top SQL Captured</a></li>          
+<li class="awr"><a class="awr" href="#11104">Top Sessions Captured</a></li>     
+</ul>                                                                           
+<a class="awr" href="#top">Back to Top</a><p />                                 
+<a class="awr" name="11101"></a>                                                
+<h3 class="awr">Top Events Captured</h3>                                        
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Events Captured"><tr><th class="awrbg" scope="col
+">Event</th><th class="awrbg" scope="col">Event Class</th><th class="awrbg" scop
+e="col">% Event</th><th class="awrbg" scope="col">Avg Active Sessions</th></tr> 
+<tr><td scope="row" class='awrc'>CPU + Wait for CPU</td><td class='awrc'>CPU</td
+><td align="right" class='awrc'>72.26</td><td align="right" class='awrc'>0.03</t
+d></tr>                                                                         
+<tr><td scope="row" class='awrnc'>log file sync</td><td class='awrnc'>Commit</td
+><td align="right" class='awrnc'>2.19</td><td align="right" class='awrnc'>0.00</
+td></tr>                                                                        
+<tr><td scope="row" class='awrc'>DLM cross inst call completion</td><td class='a
+wrc'>Other</td><td align="right" class='awrc'>1.46</td><td align="right" class='
+awrc'>0.00</td></tr>                                                            
+<tr><td scope="row" class='awrnc'>enq: RR - contention</td><td class='awrnc'>Oth
+er</td><td align="right" class='awrnc'>1.46</td><td align="right" class='awrnc'>
+0.00</td></tr>                                                                  
+</table><p />                                                                   
+<a class="awr" href="#502">Back to Workload Captured</a>                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11102"></a>                                                
+<h3 class="awr">Top Service/Module Captured</h3>                                
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Service/Module Captured"><tr><th class="awrbg" sc
+ope="col">Service</th><th class="awrbg" scope="col">Module</th><th class="awrbg"
+ scope="col">% Activity</th><th class="awrbg" scope="col">Action</th><th class="
+awrbg" scope="col">% Action</th></tr>                                           
+<tr><td scope="row" class='awrc'>TLRAPAT_API.TDBANK.CA</td><td class='awrc'>JDBC
+ Thin Client</td><td align="right" class='awrc'>54.74</td><td class='awrc'>UNNAM
+ED</td><td align="right" class='awrc'>54.74</td></tr>                           
+<tr><td scope="row" class='awrnc'>TLRAPAT_USR.TDBANK.CA</td><td class='awrnc'>JD
+BC Thin Client</td><td align="right" class='awrnc'>16.79</td><td class='awrnc'>U
+NNAMED</td><td align="right" class='awrnc'>16.79</td></tr>                      
+<tr><td scope="row" class='awrc'>TLRAPAT_ENC.TDBANK.CA</td><td class='awrc'>Enc4
+Win.exe</td><td align="right" class='awrc'>2.92</td><td class='awrc'>UNNAMED</td
+><td align="right" class='awrc'>2.92</td></tr>                                  
+<tr><td scope="row" class='awrnc'>TLRAPAT_API.TDBANK.CA</td><td class='awrnc'>UN
+NAMED</td><td align="right" class='awrnc'>2.92</td><td class='awrnc'>UNNAMED</td
+><td align="right" class='awrnc'>2.92</td></tr>                                 
+<tr><td scope="row" class='awrc'>TLRAPAT_ENC.TDBANK.CA</td><td class='awrc'>Tlr4
+Win.exe</td><td align="right" class='awrc'>2.19</td><td class='awrc'>UNNAMED</td
+><td align="right" class='awrc'>2.19</td></tr>                                  
+</table><p />                                                                   
+<a class="awr" href="#502">Back to Workload Captured</a>                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11103"></a>                                                
+<h3 class="awr">Top SQL Captured</h3>                                           
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top SQL Captured"><tr><th class="awrbg" scope="col">S
+QL ID</th><th class="awrbg" scope="col">% Activity</th><th class="awrbg" scope="
+col">Event</th><th class="awrbg" scope="col">% Event</th><th class="awrbg" scope
+="col">SQL Text</th></tr>                                                       
+<tr><td align="right" class='awrc'><a class="awr" href="#d9q2q82g1tuzx">d9q2q82g
+1tuzx</a></td><td align="right" class='awrc'>57.66</td><td class='awrc'>CPU + Wa
+it for CPU</td><td align="right" class='awrc'>57.66</td>                        
+<td class='awrc'>select decode(upper(failover_m...</td></tr>                    
+<tr><td align="right" class='awrnc'><a class="awr" href="#865qwpcdyggkk">865qwpc
+dyggkk</a></td><td align="right" class='awrnc'>2.92</td><td class='awrnc'>CPU + 
+Wait for CPU</td><td align="right" class='awrnc'>2.19</td>                      
+<td class='awrnc'>select spare6 from user$ where...</td></tr>                   
+<tr><td align="right" class='awrc'><a class="awr" href="#9zg9qd9bm4spu">9zg9qd9b
+m4spu</a></td><td align="right" class='awrc'>2.19</td><td class='awrc'>CPU + Wai
+t for CPU</td><td align="right" class='awrc'>1.46</td>                          
+<td class='awrc'>update user$ set spare6=DECODE...</td></tr>                    
+<tr><td align="right" class='awrnc'><a class="awr" href="#5dqz0hqtp9fru">5dqz0hq
+tp9fru</a></td><td align="right" class='awrnc'>1.46</td><td class='awrnc'>CPU + 
+Wait for CPU</td><td align="right" class='awrnc'>1.46</td>                      
+<td class='awrnc'>select /*+ connect_by_filterin...</td></tr>                   
+</table><p />                                                                   
+<a class="awr" href="#502">Back to Workload Captured</a>                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11104"></a>                                                
+<h3 class="awr">Top Sessions Captured</h3>                                      
+<ul>                                                                            
+<li class="awr"> '# Samples Active' shows the number of ASH samples in which the
+ session        was found waiting for that particular event. The percentage show
+n       in this column is calculated with respect to wall clock time       and n
+ot total database activity. </li>                                               
+<li class="awr"> 'XIDs' shows the number of distinct transaction IDs sampled in 
+ASH        when the session was waiting for that particular event </li>         
+<li class="awr"> For sessions running Parallel Queries, this section will NOT ag
+gregate        the PQ slave activity into the session issuing the PQ. Refer to  
+      the 'Top Sessions running PQs' section for such statistics.</li>          
+</ul>                                                                           
+<table border="1" summary="Top Sessions Captured"><tr><th class="awrbg" scope="c
+ol">Sid, Serial#</th><th class="awrbg" scope="col">% Activity</th><th class="awr
+bg" scope="col">Event</th><th class="awrbg" scope="col">% Event</th><th class="a
+wrbg" scope="col">User</th><th class="awrbg" scope="col">Program</th><th class="
+awrbg" scope="col"># Samples Active</th><th class="awrbg" scope="col">XIDs</th><
+/tr>                                                                            
+<tr><td align="right" class='awrc'>3109,21745</td><td align="right" class='awrc'
+>2.19</td><td class='awrc'>log file sync</td><td align="right" class='awrc'>2.19
+</td>                                                                           
+<td class='awrc'>TLRPFR_PAT_ENC</td><td class='awrc'>Enc4Win.exe</td><td align="
+right" class='awrc'>3/3,438 [  0%]</td><td align="right" class='awrc'>0</td></tr
+>                                                                               
+<tr><td align="right" class='awrnc'>2555, 7746</td><td align="right" class='awrn
+c'>1.46</td><td class='awrnc'>db file sequential read</td><td align="right" clas
+s='awrnc'>0.73</td>                                                             
+<td class='awrnc'>TLRPFR_PAT_ENC</td><td class='awrnc'>Tlr4Win.exe</td><td align
+="right" class='awrnc'>1/3,438 [  0%]</td><td align="right" class='awrnc'>1</td>
+</tr>                                                                           
+</table><p />                                                                   
+<a class="awr" href="#502">Back to Workload Captured</a>                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="503"></a>                                                  
+<h2 class="awr">                                                                
+Workload Not Captured - Contains Unreplayable Calls                             
+</h2>                                                                           
+<ul>                                                                            
+<li class="awr"><a class="awr" href="#11201">Top Events containing Unreplayable 
+Calls</a></li>                                                                  
+<li class="awr"><a class="awr" href="#11202">Top Service/Module containing Unrep
+layable Calls</a></li>                                                          
+<li class="awr"><a class="awr" href="#11203">Top SQL containing Unreplayable Cal
+ls</a></li>                                                                     
+<li class="awr"><a class="awr" href="#11204">Top Sessions containing Unreplayabl
+e Calls</a></li>                                                                
+</ul>                                                                           
+<a class="awr" href="#top">Back to Top</a><p />                                 
+<a class="awr" name="11201"></a>                                                
+<h3 class="awr">Top Events containing Unreplayable Calls</h3>                   
+                                                                                
+<p />                                                                           
+                  No data exists for this section of the report.                
+<p />                                                                           
+<a class="awr" href="#503">Back to Workload Not Captured - Contains Unreplayable
+ Calls</a>                                                                      
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11202"></a>                                                
+<h3 class="awr">Top Service/Module containing Unreplayable Calls</h3>           
+                                                                                
+<p />                                                                           
+                  No data exists for this section of the report.                
+<p />                                                                           
+<a class="awr" href="#503">Back to Workload Not Captured - Contains Unreplayable
+ Calls</a>                                                                      
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11203"></a>                                                
+<h3 class="awr">Top SQL containing Unreplayable Calls</h3>                      
+                                                                                
+<p />                                                                           
+                  No data exists for this section of the report.                
+<p />                                                                           
+<a class="awr" href="#503">Back to Workload Not Captured - Contains Unreplayable
+ Calls</a>                                                                      
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11204"></a>                                                
+<h3 class="awr">Top Sessions containing Unreplayable Calls</h3>                 
+                                                                                
+<p />                                                                           
+                  No data exists for this section of the report.                
+<p />                                                                           
+<a class="awr" href="#503">Back to Workload Not Captured - Contains Unreplayable
+ Calls</a>                                                                      
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="504"></a>                                                  
+<h2 class="awr">                                                                
+Workload Not Captured - User Filtered                                           
+</h2>                                                                           
+<ul>                                                                            
+<li class="awr"><a class="awr" href="#11301">Top Events Filtered Out</a></li>   
+<li class="awr"><a class="awr" href="#11302">Top Service/Module Filtered Out</a>
+</li>                                                                           
+<li class="awr"><a class="awr" href="#11303">Top SQL Filtered Out</a></li>      
+<li class="awr"><a class="awr" href="#11304">Top Sessions Filtered Out</a></li> 
+</ul>                                                                           
+<a class="awr" href="#top">Back to Top</a><p />                                 
+<a class="awr" name="11301"></a>                                                
+<h3 class="awr">Top Events Filtered Out</h3>                                    
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Events Filtered Out"><tr><th class="awrbg" scope=
+"col">Event</th><th class="awrbg" scope="col">Event Class</th><th class="awrbg" 
+scope="col">% Event</th><th class="awrbg" scope="col">Avg Active Sessions</th></
+tr>                                                                             
+<tr><td scope="row" class='awrc'>CPU + Wait for CPU</td><td class='awrc'>CPU</td
+><td align="right" class='awrc'>8.76</td><td align="right" class='awrc'>0.00</td
+></tr>                                                                          
+</table><p />                                                                   
+<a class="awr" href="#504">Back to Workload Not Captured - User Filtered</a>    
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11302"></a>                                                
+<h3 class="awr">Top Service/Module Filtered Out</h3>                            
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Service/Module Filtered Out"><tr><th class="awrbg
+" scope="col">Service</th><th class="awrbg" scope="col">Module</th><th class="aw
+rbg" scope="col">% Activity</th><th class="awrbg" scope="col">Action</th><th cla
+ss="awrbg" scope="col">% Action</th></tr>                                       
+<tr><td scope="row" class='awrc'>TLRAPAT_API.TDBANK.CA</td><td class='awrc'>UNNA
+MED</td><td align="right" class='awrc'>2.92</td><td class='awrc'>UNNAMED</td><td
+ align="right" class='awrc'>2.92</td></tr>                                      
+<tr><td scope="row" class='awrnc'>tlrapatpdb</td><td class='awrnc'>sqlplus@batlr
+dbt01 (TNS V1-V3)</td><td align="right" class='awrnc'>2.92</td><td class='awrnc'
+>UNNAMED</td><td align="right" class='awrnc'>2.92</td></tr>                     
+<tr><td scope="row" class='awrc'>UNKNOWN</td><td class='awrc'>Oracle Enterprise 
+Manager.Metric Engine</td><td align="right" class='awrc'>1.46</td><td class='awr
+c'>UNNAMED</td><td align="right" class='awrc'>1.46</td></tr>                    
+<tr><td scope="row" class='awrnc'><div class="hidden">UNKNOWN</div></td><td clas
+s='awrnc'>emagent_SQL_rac_database</td><td align="right" class='awrnc'>1.46</td>
+<td class='awrnc'>UserBlock</td><td align="right" class='awrnc'>0.73</td></tr>  
+</table><p />                                                                   
+<a class="awr" href="#504">Back to Workload Not Captured - User Filtered</a>    
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11303"></a>                                                
+<h3 class="awr">Top SQL Filtered Out</h3>                                       
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top SQL Filtered Out"><tr><th class="awrbg" scope="co
+l">SQL ID</th><th class="awrbg" scope="col">% Activity</th><th class="awrbg" sco
+pe="col">Event</th><th class="awrbg" scope="col">% Event</th><th class="awrbg" s
+cope="col">SQL Text</th></tr>                                                   
+<tr><td align="right" class='awrc'><a class="awr" href="#3ywa3ua6hjp97">3ywa3ua6
+hjp97</a></td><td align="right" class='awrc'>2.92</td><td class='awrc'>CPU + Wai
+t for CPU</td><td align="right" class='awrc'>2.92</td>                          
+<td class='awrc'>begin dbms_workload_capture.st...</td></tr>                    
+<tr><td align="right" class='awrnc'><a class="awr" href="#0ydnysfw20t0c">0ydnysf
+w20t0c</a></td><td align="right" class='awrnc'>1.46</td><td class='awrnc'>CPU + 
+Wait for CPU</td><td align="right" class='awrnc'>0.73</td>                      
+<td class='awrnc'>** SQL Text Not Available **</td></tr>                        
+</table><p />                                                                   
+<a class="awr" href="#504">Back to Workload Not Captured - User Filtered</a>    
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11304"></a>                                                
+<h3 class="awr">Top Sessions Filtered Out</h3>                                  
+<ul>                                                                            
+<li class="awr"> '# Samples Active' shows the number of ASH samples in which the
+ session        was found waiting for that particular event. The percentage show
+n       in this column is calculated with respect to wall clock time       and n
+ot total database activity. </li>                                               
+<li class="awr"> 'XIDs' shows the number of distinct transaction IDs sampled in 
+ASH        when the session was waiting for that particular event </li>         
+<li class="awr"> For sessions running Parallel Queries, this section will NOT ag
+gregate        the PQ slave activity into the session issuing the PQ. Refer to  
+      the 'Top Sessions running PQs' section for such statistics.</li>          
+</ul>                                                                           
+<table border="1" summary="Top Sessions Filtered Out"><tr><th class="awrbg" scop
+e="col">Sid, Serial#</th><th class="awrbg" scope="col">% Activity</th><th class=
+"awrbg" scope="col">Event</th><th class="awrbg" scope="col">% Event</th><th clas
+s="awrbg" scope="col">User</th><th class="awrbg" scope="col">Program</th><th cla
+ss="awrbg" scope="col"># Samples Active</th><th class="awrbg" scope="col">XIDs</
+th></tr>                                                                        
+<tr><td align="right" class='awrc'>3106,22616</td><td align="right" class='awrc'
+>2.92</td><td class='awrc'>CPU + Wait for CPU</td><td align="right" class='awrc'
+>2.92</td>                                                                      
+<td class='awrc'>SYS</td><td class='awrc'>sqlplus@batlrdbt01 (TNS V1-V3)</td><td
+ align="right" class='awrc'>4/3,438 [  0%]</td><td align="right" class='awrc'>2<
+/td></tr>                                                                       
+</table><p />                                                                   
+<a class="awr" href="#504">Back to Workload Not Captured - User Filtered</a>    
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="505"></a>                                                  
+<h2 class="awr">                                                                
+Workload Not Captured - DB Scheduler Jobs and Background Activity               
+</h2>                                                                           
+<ul>                                                                            
+<li class="awr"><a class="awr" href="#11401">Top Events (Jobs and Background Act
+ivity)</a></li>                                                                 
+<li class="awr"><a class="awr" href="#11402">Top Service/Module (Jobs and Backgr
+ound Activity)</a></li>                                                         
+<li class="awr"><a class="awr" href="#11403">Top SQL (Jobs and Background Activi
+ty)</a></li>                                                                    
+<li class="awr"><a class="awr" href="#11404">Top Sessions (Jobs and Background A
+ctivity)</a></li>                                                               
+</ul>                                                                           
+<a class="awr" href="#top">Back to Top</a><p />                                 
+<a class="awr" name="11401"></a>                                                
+<h3 class="awr">Top Events (Jobs and Background Activity)</h3>                  
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Events (Jobs and Background Activity)"><tr><th cl
+ass="awrbg" scope="col">Event</th><th class="awrbg" scope="col">Event Class</th>
+<th class="awrbg" scope="col">% Event</th><th class="awrbg" scope="col">Avg Acti
+ve Sessions</th></tr>                                                           
+<tr><td scope="row" class='awrc'>CPU + Wait for CPU</td><td class='awrc'>CPU</td
+><td align="right" class='awrc'>8.03</td><td align="right" class='awrc'>0.00</td
+></tr>                                                                          
+</table><p />                                                                   
+<a class="awr" href="#505">Back to Workload Not Captured - DB Scheduler Jobs and
+ Background Activity</a>                                                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11402"></a>                                                
+<h3 class="awr">Top Service/Module (Jobs and Background Activity)</h3>          
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top Service/Module (Jobs and Background Activity)"><t
+r><th class="awrbg" scope="col">Service</th><th class="awrbg" scope="col">Module
+</th><th class="awrbg" scope="col">% Activity</th><th class="awrbg" scope="col">
+Action</th><th class="awrbg" scope="col">% Action</th></tr>                     
+<tr><td scope="row" class='awrc'>UNKNOWN</td><td class='awrc'>MMON_SLAVE</td><td
+ align="right" class='awrc'>6.57</td><td class='awrc'>Execute Stats Advisor auto
+ task action</td><td align="right" class='awrc'>3.65</td></tr>                  
+<tr><td scope="row" class='awrnc'><div class="hidden">UNKNOWN</div></td><td clas
+s='awrnc'><div class="hidden">MMON_SLAVE</div></td><td align="right" class='awrn
+c'><div class="hidden">6.56934306569343065693430656934306569343</div></td><td cl
+ass='awrnc'>Cleanup optimizer workload information</td><td align="right" class='
+awrnc'>1.46</td></tr>                                                           
+<tr><td scope="row" class='awrc'><div class="hidden">UNKNOWN</div></td><td class
+='awrc'><div class="hidden">MMON_SLAVE</div></td><td align="right" class='awrc'>
+<div class="hidden">6.56934306569343065693430656934306569343</div></td><td class
+='awrc'>Flush KSXM hash table action</td><td align="right" class='awrc'>1.46</td
+></tr>                                                                          
+<tr><td scope="row" class='awrnc'><div class="hidden">UNKNOWN</div></td><td clas
+s='awrnc'>UNNAMED</td><td align="right" class='awrnc'>1.46</td><td class='awrnc'
+>UNNAMED</td><td align="right" class='awrnc'>1.46</td></tr>                     
+</table><p />                                                                   
+<a class="awr" href="#505">Back to Workload Not Captured - DB Scheduler Jobs and
+ Background Activity</a>                                                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11403"></a>                                                
+<h3 class="awr">Top SQL (Jobs and Background Activity)</h3>                     
+<ul>                                                                            
+</ul>                                                                           
+<table border="1" summary="Top SQL (Jobs and Background Activity)"><tr><th class
+="awrbg" scope="col">SQL ID</th><th class="awrbg" scope="col">% Activity</th><th
+ class="awrbg" scope="col">Event</th><th class="awrbg" scope="col">% Event</th><
+th class="awrbg" scope="col">SQL Text</th></tr>                                 
+<tr><td align="right" class='awrc'><a class="awr" href="#f705bwx3q0ydq">f705bwx3
+q0ydq</a></td><td align="right" class='awrc'>2.19</td><td class='awrc'>CPU + Wai
+t for CPU</td><td align="right" class='awrc'>2.19</td>                          
+<td class='awrc'>select count(*) from dba_autot...</td></tr>                    
+<tr><td align="right" class='awrnc'><a class="awr" href="#1kb56hd6c73bv">1kb56hd
+6c73bv</a></td><td align="right" class='awrnc'>1.46</td><td class='awrnc'>CPU + 
+Wait for CPU</td><td align="right" class='awrnc'>1.46</td>                      
+<td class='awrnc'>select count(*) num_windows, s...</td></tr>                   
+</table><p />                                                                   
+<a class="awr" href="#505">Back to Workload Not Captured - DB Scheduler Jobs and
+ Background Activity</a>                                                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<a class="awr" name="11404"></a>                                                
+<h3 class="awr">Top Sessions (Jobs and Background Activity)</h3>                
+<ul>                                                                            
+<li class="awr"> '# Samples Active' shows the number of ASH samples in which the
+ session        was found waiting for that particular event. The percentage show
+n       in this column is calculated with respect to wall clock time       and n
+ot total database activity. </li>                                               
+<li class="awr"> 'XIDs' shows the number of distinct transaction IDs sampled in 
+ASH        when the session was waiting for that particular event </li>         
+<li class="awr"> For sessions running Parallel Queries, this section will NOT ag
+gregate        the PQ slave activity into the session issuing the PQ. Refer to  
+      the 'Top Sessions running PQs' section for such statistics.</li>          
+</ul>                                                                           
+<table border="1" summary="Top Sessions (Jobs and Background Activity)"><tr><th 
+class="awrbg" scope="col">Sid, Serial#</th><th class="awrbg" scope="col">% Activ
+ity</th><th class="awrbg" scope="col">Event</th><th class="awrbg" scope="col">% 
+Event</th><th class="awrbg" scope="col">User</th><th class="awrbg" scope="col">P
+rogram</th><th class="awrbg" scope="col"># Samples Active</th><th class="awrbg" 
+scope="col">XIDs</th></tr>                                                      
+<tr><td align="right" class='awrc'>3955,40565</td><td align="right" class='awrc'
+>3.65</td><td class='awrc'>CPU + Wait for CPU</td><td align="right" class='awrc'
+>3.65</td>                                                                      
+<td class='awrc'>SYS</td><td class='awrc'>oracle@batlrdbt01 (MZ00)</td><td align
+="right" class='awrc'>5/3,438 [  0%]</td><td align="right" class='awrc'>0</td></
+tr>                                                                             
+<tr><td align="right" class='awrnc'>3684,18657</td><td align="right" class='awrn
+c'>1.46</td><td class='awrnc'>CPU + Wait for CPU</td><td align="right" class='aw
+rnc'>1.46</td>                                                                  
+<td class='awrnc'>SYS</td><td class='awrnc'>oracle@batlrdbt01 (MZ00)</td><td ali
+gn="right" class='awrnc'>2/3,438 [  0%]</td><td align="right" class='awrnc'>0</t
+d></tr>                                                                         
+</table><p />                                                                   
+<a class="awr" href="#505">Back to Workload Not Captured - DB Scheduler Jobs and
+ Background Activity</a>                                                        
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="99997"></a>                                                
+<p />                                                                           
+<h3 class="awr">Complete List of SQL Text</h3><p />                             
+<table border="1" summary="This table displays the text of the SQL statements wh
+ich have been                                                                   
+      referred to in the report">                                               
+<tr><th class="awrbg" scope="col">SQL Id</th><th class="awrbg" scope="col">SQL T
+ext</th></tr>                                                                   
+<tr><td scope="row" class='awrc'><a class="awr" name="0ydnysfw20t0c"></a>0ydnysf
+w20t0c</td><td class='awrc'><pre_sqltext class="awr">** SQL Text Not Available *
+*</pre_sqltext></td></tr>                                                       
+<tr><td scope="row" class='awrnc'><a class="awr" name="1kb56hd6c73bv"></a>1kb56h
+d6c73bv</td><td class='awrnc'><pre_sqltext class="awr">select count(*) num_windo
+ws,  sum(case when jobs_started&lt;&gt;jobs_completed then 1 else 0 end) num_job
+s_incomplete from  (select x.cname_ketcl client_name,        sum(case when opera
+tion = 'RUN'           then 1 else 0 end) as jobs_started,        sum(case when 
+operation = 'RUN' and status = 'SUCCEEDED'           then 1 else 0 end) as jobs_
+completed  from x$ketcl x,        dba_scheduler_job_log jl,        (select windo
+w_name,  window_start_time,  window_end_time        from (          select windo
+w_name,             lag(window_name,  1) over (order by log_date ) prev_window_n
+ame,             operation,             lag(operation,  1) over (order by log_da
+te ) prev_operation,             lag(log_date,  1) over (order by log_date ) win
+dow_start_time,             log_date window_end_time          from dba_scheduler
+_window_log          where operation in                                         
+ ('OPEN',  'CLOSE'))        where operation = 'CLOSE' and prev_operation = 'OPEN
+'          and window_name = prev_window_name) WLOG where (bitand(x.attr_ketcl, 
+2048) = 0     or 999999 &lt; (select to_number(value)                    from v$
+system_parameter                   where name = '_automatic_maintenance_test')) 
+  and x.cid_ketcl &gt; 0   and jl.job_class in (x.hjc_ketcl, x.ujc_ketcl, x.mjc_
+ketcl)   and jl.log_date between wlog.window_start_time                       an
+d wlog.window_end_time group by x.cname_ketcl,  wlog.window_name,  wlog.window_s
+tart_time,           wlog.window_end_time - wlog.window_start_time,            w
+log.window_end_time ) where client_name = 'auto optimizer stats collection'</pre
+_sqltext></td></tr>                                                             
+<tr><td scope="row" class='awrc'><a class="awr" name="3ywa3ua6hjp97"></a>3ywa3ua
+6hjp97</td><td class='awrc'><pre_sqltext class="awr">begin                      
+  dbms_workload_capture.start_capture(                                          
+    name =&gt; 'capture_test_11242025',                                         
+    dir =&gt; 'WRC_DIR6',                                                       
+    duration =&gt; 3600,                                                        
+    plsql_mode =&gt; 'extended');                                               
+end;</pre_sqltext></td></tr>                                                    
+<tr><td scope="row" class='awrnc'><a class="awr" name="5dqz0hqtp9fru"></a>5dqz0h
+qtp9fru</td><td class='awrnc'><pre_sqltext class="awr">select /*+ connect_by_fil
+tering index(sysauth$ i_sysauth1) */ privilege#,  bitand(nvl(option$,  0),  72),
+  grantee#,  level from sysauth$ connect by grantee#=prior privilege# and privil
+ege#&gt;0 start with grantee#=:1 and privilege#&gt;0</pre_sqltext></td></tr>    
+<tr><td scope="row" class='awrc'><a class="awr" name="865qwpcdyggkk"></a>865qwpc
+dyggkk</td><td class='awrc'><pre_sqltext class="awr">select spare6 from user$ wh
+ere user#=:1</pre_sqltext></td></tr>                                            
+<tr><td scope="row" class='awrnc'><a class="awr" name="9zg9qd9bm4spu"></a>9zg9qd
+9bm4spu</td><td class='awrnc'><pre_sqltext class="awr">update user$ set spare6=D
+ECODE(to_char(:2,  'YYYY-MM-DD'),  '0000-00-00',  to_date(NULL),  :2) where user
+#=:1</pre_sqltext></td></tr>                                                    
+<tr><td scope="row" class='awrc'><a class="awr" name="d9q2q82g1tuzx"></a>d9q2q82
+g1tuzx</td><td class='awrc'><pre_sqltext class="awr">select decode(upper(failove
+r_method),  NULL,  0 ,  'BASIC',  1,  'PRECONNECT',  2 ,  'PREPARSE',  4 ,  0), 
+ decode(upper(failover_type),  NULL,  1,   'NONE',  1,  'SESSION',  2,  'SELECT'
+,   4,  'TRANSACTION',   8,  'AUTO' ,  32,   1 ),  failover_retries,  failover_d
+elay,  flags,  nvl(replay_initiation_timeout,  900),  decode(upper(session_state
+_consistency),  'STATIC',  16,  0),  failover_restore from sys.service$ where na
+me = :1</pre_sqltext></td></tr>                                                 
+<tr><td scope="row" class='awrnc'><a class="awr" name="f705bwx3q0ydq"></a>f705bw
+x3q0ydq</td><td class='awrnc'><pre_sqltext class="awr">select count(*) from dba_
+autotask_window_clients c,  (select window_name,  max(log_date) max_log_date fro
+m dba_scheduler_window_log where operation = 'OPEN' group by window_name) wo,  (
+select window_name,  max(log_date) max_log_date from dba_scheduler_window_log wh
+ere operation = 'CLOSE' group by window_name) wc where c.window_name = wo.window
+_name and c.optimizer_stats = 'ENABLED' and wo.window_name = wc.window_name and 
+wo.max_log_date &lt; wc.max_log_date and wc.window_name not in (select h.window_
+name from dba_autotask_job_history h where h.client_name = 'auto optimizer stats
+ collection' and h.job_start_time between wo.max_log_date and wc.max_log_date) <
+/pre_sqltext></td></tr>                                                         
+</table>                                                                        
+<p />                                                                           
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+<a class="awr" name="11002"></a>                                                
+<h3 class="awr">Workload Filters</h3>                                           
+                                                                                
+<p />                                                                           
+                  No data exists for this section of the report.                
+<p />                                                                           
+<br /><a class="awr" href="#top">Back to Top</a><p />                           
+<p />                                                                           
+End of Report                                                                   
+</body></html>                                                                  
+                                                                                
+
+SQL> spool off
