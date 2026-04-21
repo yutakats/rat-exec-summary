@@ -24,6 +24,8 @@ function parseArgs(argv) {
       args.useLlm = true;
     } else if (token === "--openai-model") {
       args.openaiModel = argv[++i];
+    } else if (token === "--openai-base-url") {
+      args.openaiBaseUrl = argv[++i];
     } else if (token === "--help" || token === "-h") {
       args.help = true;
     } else {
@@ -36,13 +38,14 @@ function parseArgs(argv) {
 function usage() {
   return [
     "Usage:",
-    "  node scripts/replay-summary-cli.js (--replay-id <id> [--reports-root <dir>] | --report-dir <dir>) [--out <file>] [--include-awr-deep-dive] [--use-llm] [--openai-model <model>]",
+    "  node scripts/replay-summary-cli.js (--replay-id <id> [--reports-root <dir>] | --report-dir <dir>) [--out <file>] [--include-awr-deep-dive] [--use-llm] [--openai-model <model>] [--openai-base-url <url>]",
     "",
     "Examples:",
     "  node scripts/replay-summary-cli.js --replay-id 22 --out /tmp/replay-22-summary.html",
     "  node scripts/replay-summary-cli.js --replay-id 'Replay 4' --include-awr-deep-dive",
     "  node scripts/replay-summary-cli.js --report-dir /path/to/replay22 --out /tmp/replay-22-summary.html",
     "  node scripts/replay-summary-cli.js --replay-id 22 --use-llm --openai-model gpt-4.1",
+    "  node scripts/replay-summary-cli.js --report-dir /home/opc/replay_reports --use-llm --openai-base-url https://<gateway-host>",
   ].join("\n");
 }
 
@@ -269,10 +272,32 @@ function parseLlmJson(text) {
   throw new Error("LLM output was not a valid JSON object.");
 }
 
-function callOpenAi(payload, model) {
+function resolveResponsesUrl(baseUrlRaw) {
+  const baseRaw = String(baseUrlRaw || "https://api.openai.com").trim();
+  const base = new URL(baseRaw);
+  const cleanedPath = (base.pathname || "/").replace(/\/+$/, "");
+  if (cleanedPath === "" || cleanedPath === "/") {
+    base.pathname = "/v1/responses";
+  } else if (cleanedPath.endsWith("/v1")) {
+    base.pathname = `${cleanedPath}/responses`;
+  } else if (cleanedPath.endsWith("/v1/responses")) {
+    base.pathname = cleanedPath;
+  } else {
+    base.pathname = `${cleanedPath}/v1/responses`;
+  }
+  base.search = "";
+  base.hash = "";
+  return base;
+}
+
+function callOpenAi(payload, model, baseUrlRaw) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not set. Export it or omit --use-llm.");
+  }
+  const responsesUrl = resolveResponsesUrl(baseUrlRaw);
+  if (responsesUrl.protocol !== "https:") {
+    throw new Error(`Only https endpoints are supported for LLM mode. Got: ${responsesUrl.protocol}`);
   }
 
   const requestBody = JSON.stringify({
@@ -300,9 +325,9 @@ function callOpenAi(payload, model) {
   });
 
   const requestOptions = {
-    hostname: "api.openai.com",
-    port: 443,
-    path: "/v1/responses",
+    hostname: responsesUrl.hostname,
+    port: Number(responsesUrl.port || 443),
+    path: `${responsesUrl.pathname}${responsesUrl.search || ""}`,
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -327,8 +352,8 @@ function callOpenAi(payload, model) {
               ).toString("base64")}\r\n`
             : "";
         const connectReq =
-          `CONNECT api.openai.com:443 HTTP/1.1\r\n` +
-          `Host: api.openai.com:443\r\n` +
+          `CONNECT ${responsesUrl.hostname}:${requestOptions.port} HTTP/1.1\r\n` +
+          `Host: ${responsesUrl.hostname}:${requestOptions.port}\r\n` +
           authHeader +
           `Connection: close\r\n\r\n`;
         proxySocket.write(connectReq);
@@ -349,7 +374,7 @@ function callOpenAi(payload, model) {
         }
         const secureSocket = tls.connect({
           socket: proxySocket,
-          servername: "api.openai.com",
+          servername: responsesUrl.hostname,
         });
         secureSocket.once("secureConnect", () => callback(null, secureSocket));
         secureSocket.once("error", callback);
@@ -427,8 +452,9 @@ async function main() {
 
   if (args.useLlm) {
     const model = args.openaiModel || process.env.OPENAI_MODEL || "gpt-4.1";
+    const baseUrl = args.openaiBaseUrl || process.env.OPENAI_BASE_URL || "https://api.openai.com";
     const llmPayload = app.buildLLMSummaryPayload(deterministicSummary);
-    const llmResult = await callOpenAi(llmPayload, model);
+    const llmResult = await callOpenAi(llmPayload, model, baseUrl);
     finalSummary = app.applyLLMSections(deterministicSummary, llmResult.llmSections);
     finalSummary = {
       ...finalSummary,
