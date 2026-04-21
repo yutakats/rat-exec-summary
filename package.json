@@ -1,0 +1,12 @@
+{
+  "name": "rat-exec-summary",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DB Replay executive summary tooling",
+  "scripts": {
+    "replay:cli": "node scripts/replay-summary-cli.js"
+  },
+  "dependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

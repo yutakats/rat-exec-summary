@@ -41,6 +41,19 @@ The replay flow generates an executive summary from three Oracle Enterprise Mana
 5. Open the SPA app:
    - `http://127.0.0.1:4567/apps/web/spa.html`
 
+## Command-Line Wrapper (No UI)
+
+You can generate Replay executive summary HTML directly from the command line.
+
+1. Install Node dependency once:
+   - `npm install`
+2. Run wrapper:
+   - `node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --replay-id 22 --out /tmp/replay-22-summary.html`
+
+Optional flags:
+- `--reports-root <dir>` override report root (defaults to `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports` or `REPORTS_ROOT` env var)
+- `--include-awr-deep-dive` include the AWR drill-down section
+
 You can also open `/Users/yutaka/Documents/codex-1/apps/web/spa.html` directly in a browser and upload SPA HTML reports locally. The SPA flow does not require the Ruby service because it reads the selected files in-browser.
 
 ## Runtime Behavior
