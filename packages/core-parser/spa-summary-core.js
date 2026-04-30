@@ -957,6 +957,7 @@
           frequency: detail.frequency || 0,
           objectIds: [],
           metrics: {},
+          supportingStats: {},
           findings: [],
           planChanged: false,
           adaptivePlan: false,
@@ -986,6 +987,15 @@
           ...existing.plans,
           ...detail.plans,
         };
+        if (detail.metrics.ROWS && !existing.supportingStats.ROWS) {
+          existing.supportingStats.ROWS = {
+            metric: "ROWS",
+            before: detail.metrics.ROWS.before ?? "",
+            after: detail.metrics.ROWS.after ?? "",
+            statementImpact: detail.metrics.ROWS.statementImpact ?? null,
+            workloadImpact: detail.metrics.ROWS.workloadImpact ?? null,
+          };
+        }
 
         const metricStat =
           detail.metrics[report.metric] ||
@@ -2211,6 +2221,49 @@
     return base;
   }
 
+  function formatMetricDelta(metric, beforeValue, afterValue) {
+    const before = toNumber(beforeValue);
+    const after = toNumber(afterValue);
+    if (!Number.isFinite(before) || !Number.isFinite(after)) {
+      return "n/a";
+    }
+    const delta = after - before;
+    const deltaText = `${delta > 0 ? "+" : delta < 0 ? "-" : ""}${formatMetricValue(metric, Math.abs(delta))}`;
+    return `${formatMetricValue(metric, before)} -> ${formatMetricValue(metric, after)} (${deltaText})`;
+  }
+
+  function bufferGetsDeltaFor(sql) {
+    const metric = sql?.metrics?.BUFFER_GETS;
+    if (!metric) {
+      return null;
+    }
+    const before = toNumber(metric.before);
+    const after = toNumber(metric.after);
+    if (!Number.isFinite(before) || !Number.isFinite(after)) {
+      return null;
+    }
+    return {
+      text: formatMetricDelta("BUFFER_GETS", before, after),
+      rawText: `Buffer Gets ${formatMetricValue("BUFFER_GETS", before)} -> ${formatMetricValue("BUFFER_GETS", after)}`,
+    };
+  }
+
+  function rowsDeltaFor(sql) {
+    const metric = sql?.supportingStats?.ROWS || sql?.metrics?.ROWS;
+    if (!metric) {
+      return null;
+    }
+    const before = toNumber(metric.before);
+    const after = toNumber(metric.after);
+    if (!Number.isFinite(before) || !Number.isFinite(after)) {
+      return null;
+    }
+    return {
+      text: formatMetricDelta("ROWS", before, after),
+      rawText: `Rows ${formatMetricValue("ROWS", before)} -> ${formatMetricValue("ROWS", after)}`,
+    };
+  }
+
   function shouldShowPrimaryDriver(row) {
     if (!row) {
       return false;
@@ -2230,6 +2283,7 @@
           sqlId: sql.sqlId,
           sql,
           metricEntry,
+          metricLabel: metricEntry ? metricLabel(metricEntry.metric) : "Measured Metric",
           impactSort: Math.abs(metricEntry?.workloadImpact || metricEntry?.statementImpact || 0),
           impact: metricEntry ? describeMetricChange(metricEntry, targetResult) : "n/a",
           rawImpactText: metricEntry
@@ -2237,11 +2291,13 @@
             : "",
           before: metricEntry ? formatMetricValue(metricEntry.metric, metricEntry.before) : "n/a",
           after: metricEntry ? formatMetricValue(metricEntry.metric, metricEntry.after) : "n/a",
-          planChange: sql.planChanged ? (sql.planSummary.hashChange ? "Yes" : "Flagged") : "No",
+          planChange: sql.planChanged ? "Yes" : "No",
           likelyCause: likelyCauseFor(sql, metricEntry),
           recommendedAction: recommendedActionFor(sql, metricEntry),
           priority: classifyPriority(sql, metricEntry, targetResult),
           frequency: sql.frequency || 0,
+          bufferGetsDelta: bufferGetsDeltaFor(sql),
+          rowsDelta: rowsDeltaFor(sql),
         };
       });
 
@@ -2644,12 +2700,12 @@
       </div>`;
   }
 
-  function renderImpactTableRows(rows, emptyMessage) {
+  function renderImpactCards(rows, emptyMessage) {
     if (!rows.length) {
-      return `<tr><td colspan="9">${escapeHtml(emptyMessage)}</td></tr>`;
+      return `<div class="summary-block">${escapeHtml(emptyMessage)}</div>`;
     }
 
-    return rows
+    return `<div class="impact-card-list">${rows
       .map((row) => {
         const priorityTone =
           row.priority === "Must-fix now"
@@ -2661,21 +2717,49 @@
               : row.priority === "High-value improvement"
                 ? "priority-good"
                 : "priority-low";
-        return `<tr>
-        <td><strong>${escapeHtml(row.sqlId)}</strong><div class="tiny">${escapeHtml(row.sql.schema || "-")}</div></td>
-        <td title="${escapeHtml(row.rawImpactText || "")}">${escapeHtml(row.impact)}</td>
-        <td>${escapeHtml(formatNumber(row.frequency, 0))}</td>
-        <td>${escapeHtml(row.before)}</td>
-        <td>${escapeHtml(row.after)}</td>
-        <td>${escapeHtml(row.contributionText || "n/a")}<div class="tiny">${escapeHtml(
-          `of measured ${row.sql.result === "Regressed" ? "regression" : "improvement"}`
-        )}</div></td>
-        <td>${escapeHtml(row.planChange)}</td>
-        <td>${escapeHtml(row.likelyCause)}<div class="tiny">${escapeHtml(`Next check: ${row.recommendedAction}`)}</div></td>
-        <td><span class="pill ${priorityTone}">${escapeHtml(row.priority)}</span><div class="tiny">${escapeHtml(row.priorityReason)}</div></td>
-      </tr>`;
+        const measuredMetricName = row.metricLabel || "Measured Metric";
+        const showBufferGetsTile = normalizeMetric(row.metricEntry?.metric) !== "BUFFER_GETS" && row.bufferGetsDelta;
+        const evidenceItems = [
+          `<div class="impact-evidence-item">
+            <div class="impact-evidence-label">${escapeHtml(`${measuredMetricName} Before -> After`)}</div>
+            <div>${escapeHtml(row.before)} -> ${escapeHtml(row.after)}</div>
+          </div>`,
+          `<div class="impact-evidence-item">
+            <div class="impact-evidence-label">Rows Delta</div>
+            <div title="${escapeHtml(row.rowsDelta?.rawText || "")}">${escapeHtml(row.rowsDelta?.text || "n/a")}</div>
+          </div>`,
+        ];
+        if (showBufferGetsTile) {
+          evidenceItems.push(`<div class="impact-evidence-item">
+            <div class="impact-evidence-label">Buffer Gets Delta</div>
+            <div title="${escapeHtml(row.bufferGetsDelta?.rawText || "")}">${escapeHtml(row.bufferGetsDelta?.text || "n/a")}</div>
+          </div>`);
+        }
+        return `<article class="impact-card">
+          <div class="impact-card-head">
+            <div>
+              <div class="impact-card-id">${escapeHtml(row.sqlId)}</div>
+              <div class="tiny">${escapeHtml(row.sql.schema || "-")}</div>
+            </div>
+            <div class="impact-chip-row">
+              <span class="pill ${row.sql.result === "Regressed" ? "bad" : "good"}">${escapeHtml(row.sql.result)}</span>
+              <span class="pill ${priorityTone}">${escapeHtml(row.priority)}</span>
+            </div>
+          </div>
+          <div class="impact-card-text">${escapeHtml(shortenSql(row.sql.sqlText, 170))}</div>
+          <div class="impact-meta-row">
+            <div><strong>Impact:</strong> <span title="${escapeHtml(row.rawImpactText || "")}">${escapeHtml(row.impact)}</span></div>
+            <div><strong>Frequency:</strong> ${escapeHtml(formatNumber(row.frequency, 0))}</div>
+            <div><strong>Plan changed:</strong> ${escapeHtml(row.planChange)}</div>
+            <div><strong>Contribution:</strong> ${escapeHtml(row.contributionText || "n/a")}</div>
+          </div>
+          <div class="impact-evidence-grid">${evidenceItems.join("")}</div>
+          <div class="impact-callout"><strong>Likely cause:</strong> ${escapeHtml(row.likelyCause)}</div>
+          <div class="impact-next-check"><strong>Next check:</strong> ${escapeHtml(row.recommendedAction)}</div>
+          <div class="tiny">${escapeHtml(row.priorityReason)}</div>
+        </article>`;
       })
-      .join("");
+      .join("")}</div>`;
   }
 
   function renderList(items, emptyMessage) {
@@ -2944,7 +3028,7 @@
             `Direction: ${row.sql.result}`,
             `Frequency: ${formatNumber(sql.frequency || row.frequency || 0, 0)}`,
             `Per-execution elapsed delta: ${elapsedDeltaText}`,
-            `Workload-level proxy: ${workloadProxyText}`,
+            `Net Workload Impact (%): ${workloadProxyText}`,
             `Contribution share: ${Number.isFinite(contributionSharePct) ? `${formatFixedNumber(contributionSharePct, 1)}% (normalized)` : "N/A"}`,
           ].join(" | "),
         };
@@ -3054,7 +3138,7 @@
         const fill = row.direction === "Regressed" ? "rgba(153, 27, 27, 0.72)" : "rgba(22, 101, 52, 0.72)";
         const stroke = row.direction === "Regressed" ? "#991b1b" : "#166534";
         const pointTitle = useProxy
-          ? `${row.tooltipText} | Y-axis mode: workload-level proxy`
+          ? `${row.tooltipText} | Y-axis mode: Net Workload Impact (%)`
           : row.tooltipText;
         return `<g>
           <circle cx="${formatFixedNumber(cx, 2)}" cy="${formatFixedNumber(cy, 2)}" r="${formatFixedNumber(radius, 2)}" fill="${fill}" stroke="${stroke}" stroke-width="2">
@@ -3088,7 +3172,7 @@
       <div class="driver-chart-title">Impact vs Frequency Matrix</div>
       <div class="driver-chart-caption">${
         useProxy
-          ? "Y-axis uses workload impact because per-SQL elapsed-time detail was not available."
+          ? "Y-axis uses Net Workload Impact (%) because per-SQL elapsed-time detail was not available."
           : "Shows how frequency can turn small SQL changes into larger workload impact."
       }</div>
       <svg class="driver-matrix" viewBox="0 0 ${width} ${height}" role="img" aria-label="Impact versus frequency matrix">
@@ -3104,7 +3188,7 @@
         <text x="${margin.left + plotWidth / 2}" y="${height - 10}" text-anchor="middle" font-size="15" font-weight="700" fill="#5d677d">Execution Frequency</text>
         <text x="30" y="${margin.top + plotHeight / 2}" text-anchor="middle" font-size="15" font-weight="700" fill="#5d677d" transform="rotate(-90 30 ${margin.top + plotHeight / 2})">${
           useProxy
-            ? `<tspan x="30" dy="-8">Workload-Level</tspan><tspan x="30" dy="16">Impact Proxy</tspan>`
+            ? `<tspan x="30" dy="-8">Net Workload</tspan><tspan x="30" dy="16">Impact (%)</tspan>`
             : "Per-execution Elapsed-Time Delta"
         }</text>
         <text x="${margin.left + 8}" y="${margin.top + 12}" font-size="12" fill="#991b1b">
@@ -3129,7 +3213,7 @@
         <div><span class="driver-swatch bad"></span>Red bubbles = regressed SQL</div>
         <div><span class="driver-swatch good"></span>Green bubbles = improved SQL</div>
         <div>Bubble size = normalized workload contribution</div>
-        <div>${useProxy ? "Y-axis uses a workload proxy." : "Rows without elapsed-time delta were omitted."}</div>
+        <div>${useProxy ? "Y-axis uses Net Workload Impact (%)." : "Rows without elapsed-time delta were omitted."}</div>
       </div>
       <div class="summary-block" style="margin-top:12px;">
         <strong>What This Chart Shows</strong>
@@ -3646,6 +3730,68 @@
       .driver-interpretation {
         margin-top: 14px;
       }
+      .impact-card-list {
+        display: grid;
+        gap: 12px;
+      }
+      .impact-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: white;
+        padding: 14px 16px;
+      }
+      .impact-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .impact-card-id {
+        font-size: 1rem;
+        font-weight: 800;
+      }
+      .impact-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .impact-card-text {
+        margin-top: 10px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+      .impact-meta-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px 12px;
+        margin-top: 12px;
+      }
+      .impact-evidence-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .impact-evidence-item {
+        border: 1px solid rgba(26, 34, 56, 0.08);
+        border-radius: 14px;
+        background: #f8fafc;
+        padding: 10px 12px;
+      }
+      .impact-evidence-label {
+        color: var(--muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 800;
+        margin-bottom: 5px;
+      }
+      .impact-callout,
+      .impact-next-check {
+        margin-top: 12px;
+        line-height: 1.45;
+      }
       .sql-inventory-list {
         display: grid;
         gap: 12px;
@@ -3704,6 +3850,12 @@
         }
         .driver-bar-value {
           text-align: left;
+        }
+        .impact-card-head {
+          flex-direction: column;
+        }
+        .impact-chip-row {
+          justify-content: flex-start;
         }
         .sql-card-grid {
           grid-template-columns: 1fr;
@@ -3833,39 +3985,13 @@
       <section class="panel">
         <h2>Top Regressions</h2>
         <p class="section-note">Only material SQL regressions are listed here. Noise, near-zero baselines, and below-threshold changes are excluded.</p>
-        <table>
-          <tr>
-            <th>SQL ID</th>
-            <th>What Changed</th>
-            <th>Frequency</th>
-            <th>Before</th>
-            <th>After</th>
-            <th>Contribution</th>
-            <th>Plan Change</th>
-            <th>Likely Cause / Next Check</th>
-            <th>Priority</th>
-          </tr>
-          ${renderImpactTableRows(summary.topRegressions.slice(0, 8), "No regressed SQL statements were identified in the supplied SPA reports.")}
-        </table>
+        ${renderImpactCards(summary.topRegressions.slice(0, 8), "No regressed SQL statements were identified in the supplied SPA reports.")}
       </section>
 
       <section class="panel">
         <h2>Top Improvements</h2>
         <p class="section-note">Only material improvements are listed here. Optimizer-cost-only changes do not drive the verdict and are filtered out of this table.</p>
-        <table>
-          <tr>
-            <th>SQL ID</th>
-            <th>What Changed</th>
-            <th>Frequency</th>
-            <th>Before</th>
-            <th>After</th>
-            <th>Contribution</th>
-            <th>Plan Change</th>
-            <th>Likely Cause / Next Check</th>
-            <th>Priority</th>
-          </tr>
-          ${renderImpactTableRows(summary.topImprovements.slice(0, 8), "No improved SQL statements were identified in the supplied SPA reports.")}
-        </table>
+        ${renderImpactCards(summary.topImprovements.slice(0, 8), "No improved SQL statements were identified in the supplied SPA reports.")}
       </section>
 
       <section class="panel">
@@ -4086,6 +4212,8 @@
         sql_id: row.sqlId,
         impact: row.impact,
         frequency: row.frequency,
+        rows_delta: row.rowsDelta?.text || null,
+        buffer_gets_delta: row.bufferGetsDelta?.text || null,
         contribution_pct: row.contributionPct,
         contribution_text: row.contributionText,
         before: row.before,
@@ -4099,6 +4227,8 @@
         sql_id: row.sqlId,
         impact: row.impact,
         frequency: row.frequency,
+        rows_delta: row.rowsDelta?.text || null,
+        buffer_gets_delta: row.bufferGetsDelta?.text || null,
         contribution_pct: row.contributionPct,
         contribution_text: row.contributionText,
         before: row.before,

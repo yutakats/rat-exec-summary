@@ -49,10 +49,11 @@ function usage() {
   ].join("\n");
 }
 
-function findReportFile(replayDir, primaryMatchers, fallbackMatchers) {
+function findReportFile(replayDir, primaryMatchers, fallbackMatchers, contentMatchers = []) {
   const files = fs.readdirSync(replayDir)
     .filter((name) => /\.htm[l]?$/i.test(name))
-    .map((name) => ({ name, fullPath: path.join(replayDir, name) }));
+    .map((name) => ({ name, fullPath: path.join(replayDir, name) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   for (const matcher of primaryMatchers) {
     const hit = files.find((file) => matcher.test(file.name));
@@ -68,6 +69,20 @@ function findReportFile(replayDir, primaryMatchers, fallbackMatchers) {
     }
   }
 
+  if (contentMatchers.length > 0) {
+    for (const file of files) {
+      let content = "";
+      try {
+        content = fs.readFileSync(file.fullPath, "utf8");
+      } catch (_error) {
+        continue;
+      }
+      if (contentMatchers.some((matcher) => matcher.test(content))) {
+        return file.fullPath;
+      }
+    }
+  }
+
   return null;
 }
 
@@ -80,22 +95,26 @@ function loadReplayBundle(reportsRoot, replayId) {
   const dbReplayPath = findReportFile(
     replayDir,
     [/^DB Replay Report\.htm[l]?$/i],
-    [/replay[_ -]?report/i, /during[_ -]?replay/i, /replay/i]
+    [/replay[_ -]?report/i, /during[_ -]?replay/i, /replay/i],
+    [/<title>\s*DB Replay Report\s*<\/title>/i, /summary="replay options"/i, /Replay Divergence Summary/i]
   );
   const comparePath = findReportFile(
     replayDir,
     [/^Compare Period Report\.htm[l]?$/i],
-    [/compare[_ -]?period/i, /compare/i]
+    [/compare[_ -]?period/i, /compare/i],
+    [/<title>\s*Compare Period Report\s*<\/title>/i, /AWR snapshots not found for Replay/i, /Main Performance Statistics/i]
   );
   const awrPath = findReportFile(
     replayDir,
     [/^AWR Compare Period Report.*\.htm[l]?$/i],
-    [/awr.*(compare|diff|report)/i, /awr/i]
+    [/awr.*(compare|diff|report)/i, /awr/i],
+    [/<title>\s*AWR Compare Period Report/i, /WORKLOAD REPOSITORY/i]
   );
   const capturePath = findReportFile(
     replayDir,
     [/^Database Capture Report.*\.htm[l]?$/i, /^workload_capture_report\.htm[l]?$/i, /^capture_report\.htm[l]?$/i],
-    [/database[_ -]?capture/i, /workload[_ -]?capture/i, /capture[_ -]?report/i]
+    [/database[_ -]?capture/i, /workload[_ -]?capture/i, /capture[_ -]?report/i],
+    [/<title>\s*Database Capture Report\s*<\/title>/i, /DB Capture Report/i, /Captured Workload Statistics/i]
   );
 
   if (!dbReplayPath) {
@@ -123,22 +142,26 @@ function loadReplayBundleFromDir(reportDir, replayIdOverride) {
   const dbReplayPath = findReportFile(
     replayDir,
     [/^DB Replay Report\.htm[l]?$/i],
-    [/replay[_ -]?report/i, /during[_ -]?replay/i, /replay/i]
+    [/replay[_ -]?report/i, /during[_ -]?replay/i, /replay/i],
+    [/<title>\s*DB Replay Report\s*<\/title>/i, /summary="replay options"/i, /Replay Divergence Summary/i]
   );
   const comparePath = findReportFile(
     replayDir,
     [/^Compare Period Report\.htm[l]?$/i],
-    [/compare[_ -]?period/i, /compare/i]
+    [/compare[_ -]?period/i, /compare/i],
+    [/<title>\s*Compare Period Report\s*<\/title>/i, /AWR snapshots not found for Replay/i, /Main Performance Statistics/i]
   );
   const awrPath = findReportFile(
     replayDir,
     [/^AWR Compare Period Report.*\.htm[l]?$/i],
-    [/awr.*(compare|diff|report)/i, /awr/i]
+    [/awr.*(compare|diff|report)/i, /awr/i],
+    [/<title>\s*AWR Compare Period Report/i, /WORKLOAD REPOSITORY/i]
   );
   const capturePath = findReportFile(
     replayDir,
     [/^Database Capture Report.*\.htm[l]?$/i, /^workload_capture_report\.htm[l]?$/i, /^capture_report\.htm[l]?$/i],
-    [/database[_ -]?capture/i, /workload[_ -]?capture/i, /capture[_ -]?report/i]
+    [/database[_ -]?capture/i, /workload[_ -]?capture/i, /capture[_ -]?report/i],
+    [/<title>\s*Database Capture Report\s*<\/title>/i, /DB Capture Report/i, /Captured Workload Statistics/i]
   );
 
   if (!dbReplayPath) {

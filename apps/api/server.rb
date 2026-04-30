@@ -8,16 +8,27 @@ PORT = Integer(ENV.fetch("PORT", "4567"))
 OPENAI_MODEL = ENV.fetch("OPENAI_MODEL", "gpt-4.1")
 REPORTS_ROOT = ENV.fetch("REPORTS_ROOT", File.join(ROOT, "tests/fixtures/dbrep_reports"))
 
-def find_report_file(replay_dir, primary_globs:, fallback_patterns:)
+def find_report_file(replay_dir, primary_globs:, fallback_patterns:, content_patterns: [])
   primary_globs.each do |glob_pattern|
     match = Dir.glob(File.join(replay_dir, glob_pattern)).sort.find { |path| File.file?(path) }
     return match if match
   end
 
-  html_files = Dir.glob(File.join(replay_dir, "*.ht*")).select { |path| File.file?(path) }
+  html_files = Dir.glob(File.join(replay_dir, "*.ht*")).select { |path| File.file?(path) }.sort
   fallback_patterns.each do |pattern|
     match = html_files.find { |path| File.basename(path).match?(pattern) }
     return match if match
+  end
+
+  unless content_patterns.empty?
+    html_files.each do |path|
+      begin
+        content = File.read(path)
+      rescue
+        next
+      end
+      return path if content_patterns.any? { |pattern| content.match?(pattern) }
+    end
   end
 
   nil
@@ -265,6 +276,11 @@ server.mount_proc "/api/replay-reports" do |req, res|
         /_replay\.ht/i,
         /during[_ -]?replay/i,
         /replay/i,
+      ],
+      content_patterns: [
+        /<title>\s*DB Replay Report\s*<\/title>/i,
+        /summary="replay options"/i,
+        /Replay Divergence Summary/i,
       ]
     )
     compare_path = find_report_file(
@@ -273,6 +289,11 @@ server.mount_proc "/api/replay-reports" do |req, res|
       fallback_patterns: [
         /compare[_ -]?period/i,
         /compare/i,
+      ],
+      content_patterns: [
+        /<title>\s*Compare Period Report\s*<\/title>/i,
+        /AWR snapshots not found for Replay/i,
+        /Main Performance Statistics/i,
       ]
     )
     awr_path = find_report_file(
@@ -281,6 +302,10 @@ server.mount_proc "/api/replay-reports" do |req, res|
       fallback_patterns: [
         /awr.*(compare|diff|report)/i,
         /awr/i,
+      ],
+      content_patterns: [
+        /<title>\s*AWR Compare Period Report/i,
+        /WORKLOAD REPOSITORY/i,
       ]
     )
     capture_path = find_report_file(
@@ -290,6 +315,11 @@ server.mount_proc "/api/replay-reports" do |req, res|
         /database[_ -]?capture/i,
         /workload[_ -]?capture/i,
         /capture[_ -]?report/i,
+      ],
+      content_patterns: [
+        /<title>\s*Database Capture Report\s*<\/title>/i,
+        /DB Capture Report/i,
+        /Captured Workload Statistics/i,
       ]
     )
 

@@ -1600,6 +1600,7 @@
       Boolean(replayVersion && captureVersion) && replayVersion !== captureVersion;
     const captureCpu = parsed.compare.cpuUsage.Capture || {};
     const replayCpu = parsed.compare.cpuUsage.Replay || {};
+    const replayOptions = parsed.dbReplay.replayOptions || {};
     const captureCores = parseCoreCount(captureCpu.topology)?.cores;
     const replayCores = parseCoreCount(replayCpu.topology)?.cores;
     const topReplayWait = parsed.awr.topEvents.find((event) => event.secondEvent && event.secondEvent !== "-");
@@ -1727,6 +1728,36 @@
       findings.push({
         title: "Replay outcome",
         text: "Replay completed successfully.",
+      });
+    }
+
+    const syncOption = findFieldValue(replayOptions, ["synchronization"]);
+    const connectTimeOption = findFieldValue(replayOptions, ["connect", "time"]);
+    const connectAutoOption = findFieldValue(replayOptions, ["connect", "auto", "correct"]);
+    const thinkTimeOption = findFieldValue(replayOptions, ["think", "time"]);
+    const thinkAutoOption = findFieldValue(replayOptions, ["think", "auto", "correct"]);
+    const queryOnlyOption = findFieldValue(replayOptions, ["query", "only"]);
+    const wrcClientsOption = findFieldValue(replayOptions, ["number", "wrc", "clients"]);
+    const replayOptionParts = [];
+    if (syncOption) {
+      replayOptionParts.push(`Synchronization=${syncOption}`);
+    }
+    if (connectTimeOption || connectAutoOption) {
+      replayOptionParts.push(`Connect Time=${connectTimeOption || "n/a"} (Auto Correct=${connectAutoOption || "n/a"})`);
+    }
+    if (thinkTimeOption || thinkAutoOption) {
+      replayOptionParts.push(`Think Time=${thinkTimeOption || "n/a"} (Auto Correct=${thinkAutoOption || "n/a"})`);
+    }
+    if (queryOnlyOption) {
+      replayOptionParts.push(`Query Only=${queryOnlyOption}`);
+    }
+    if (wrcClientsOption) {
+      replayOptionParts.push(`WRC Clients=${wrcClientsOption.replace(/\s+/g, " ").trim()}`);
+    }
+    if (replayOptionParts.length > 0) {
+      findings.push({
+        title: "Replay options",
+        text: replayOptionParts.join("; "),
       });
     }
 

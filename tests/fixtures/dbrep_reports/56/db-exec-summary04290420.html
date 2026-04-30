@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Replay Executive Summary replay_reports</title>
+    <style>
+      :root {
+        --bg: #fbfaf6;
+        --ink: #172033;
+        --muted: #526174;
+        --line: rgba(23, 32, 51, 0.12);
+        --panel: white;
+        --accent: #0f766e;
+        --accent-soft: rgba(15, 118, 110, 0.12);
+        --high: #991b1b;
+        --moderate: #92400e;
+        --low: #166534;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font: 16px/1.55 "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(45, 212, 191, 0.18), transparent 22%),
+          linear-gradient(180deg, #fffefb 0%, var(--bg) 100%);
+      }
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 36px 20px 64px;
+      }
+      .hero {
+        padding: 28px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(236,253,245,0.92));
+        border: 1px solid var(--line);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0;
+        max-width: 860px;
+      }
+      .meta, .cards, .findings {
+        display: grid;
+        gap: 16px;
+      }
+      .meta, .cards {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        margin-top: 18px;
+      }
+      .card, .finding {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel);
+        padding: 18px;
+      }
+      .eyebrow {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+      .value {
+        margin-top: 8px;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+      section {
+        margin-top: 28px;
+      }
+      h2 {
+        margin: 0 0 14px;
+        font-size: 1.35rem;
+      }
+      h3 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+      .tag {
+        display: inline-block;
+        margin-bottom: 12px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .finding.high .tag { background: rgba(153, 27, 27, 0.12); color: var(--high); }
+      .finding.moderate .tag { background: rgba(146, 64, 14, 0.12); color: var(--moderate); }
+      .finding.low .tag { background: rgba(22, 101, 52, 0.12); color: var(--low); }
+      .finding h3 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+      }
+      .finding p {
+        margin: 8px 0 0;
+      }
+      .inline-hot {
+        color: #b91c1c;
+        background: rgba(185, 28, 28, 0.08);
+        border-radius: 8px;
+        padding: 2px 6px;
+        font: 700 0.92em/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        background: #f8fafc;
+      }
+      .summary-block {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: white;
+        padding: 18px;
+      }
+      .verdict {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+      }
+      .prototype-note {
+        margin-top: 12px;
+        border: 1px dashed rgba(23, 32, 51, 0.18);
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+      .prototype-note p {
+        margin: 0;
+      }
+      .criteria {
+        margin-top: 10px;
+      }
+      .criteria strong {
+        display: block;
+        margin-top: 10px;
+      }
+      .criteria ul {
+        margin: 6px 0 0 0;
+        padding-left: 20px;
+      }
+      .criteria li {
+        margin: 4px 0;
+      }
+      .prototype-section {
+        border: 1px solid rgba(15, 118, 110, 0.18);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(240, 253, 250, 0.95), rgba(248, 250, 252, 0.98));
+        padding: 20px;
+      }
+      .prototype-section h2 {
+        margin-bottom: 10px;
+      }
+      .prototype-subsection {
+        margin-top: 18px;
+        border: 1px solid rgba(23, 32, 51, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 16px;
+      }
+      .prototype-subsection:first-of-type {
+        margin-top: 12px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 14px;
+      }
+      .save-btn {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .save-btn:hover {
+        border-color: rgba(23, 32, 51, 0.28);
+      }
+      details.collapsible-wrap {
+        margin-top: 10px;
+      }
+      details.collapsible-wrap > summary {
+        list-style: none;
+        border: 1px solid var(--line);
+        background: #f8fafc;
+        color: var(--ink);
+        border-radius: 12px;
+        padding: 6px 10px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      details.collapsible-wrap > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.collapsible-wrap > summary::before {
+        content: "+";
+        width: 18px;
+        text-align: center;
+      }
+      details.collapsible-wrap[open] > summary::before {
+        content: "-";
+      }
+      .collapsible-details {
+        margin-top: 10px;
+      }
+      .metric-charts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+        margin: 8px 0 14px;
+      }
+      .metric-chart {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fcfdfd;
+        padding: 10px 12px;
+      }
+      .metric-chart h4 {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+      }
+      .metric-row {
+        margin: 8px 0;
+      }
+      .metric-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .bar-track {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+      }
+      .bar-fill.capture {
+        background: #2563eb;
+      }
+      .bar-fill.replay {
+        background: #dc2626;
+      }
+      ul.clean {
+        margin: 0;
+        padding-left: 20px;
+      }
+      ul.clean li {
+        margin: 10px 0;
+      }
+      @media print {
+        .actions {
+          display: none;
+        }
+        .collapsible-details {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Enterprise Manager Database Replay Executive Summary</div>
+        <h1>soerep_2</h1>
+        <p class="sub">soerep_2 finished with status COMPLETED.  Overall verdict: mixed.</p>
+        <div class="verdict" style="color:#92400e;background:rgba(146,64,14,0.12);margin-top:16px;">
+          WARN Bottom line: <strong>mixed</strong>
+        </div>
+        <div class="meta">
+          <div class="card"><div class="eyebrow">Risk Rating</div><div class="value">Low</div></div>
+          <div class="card"><div class="eyebrow">Replay Database</div><div class="value">CDB$ROOT(23.26.1.0.0)</div></div>
+          <div class="card"><div class="eyebrow">Capture Database</div><div class="value">PDB1(21.3.0.0.0)</div></div>
+        </div>
+        <div class="actions">
+          <button id="saveReportHtml" class="save-btn" type="button">Save as HTML</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Executive Summary</h2>
+        <div class="summary-block">Replay &quot;soerep_2&quot; completed successfully. This replay validates an upgrade path from captureVersion 21.3.0.0.0 to replayVersion <strong>23.26.1.0.0</strong>. However, performance comparability is limited because DB Time and CPU Time comparison metrics are not available, and capture workload validation is unavailable because the Database Capture Report is missing.</div>
+      </section>
+
+      <section>
+        <h2>Replay At-a-Glance</h2>
+        <div class="summary-block">
+          <ul class="clean">
+            <li><strong>Verdict:</strong> degraded</li>
+            <li><strong>Test outcome:</strong> COMPLETED (valid: Yes) - Replay completed and the core comparability checks do not show a major fidelity failure.</li>
+            <li><strong>Test objective:</strong> Version upgrade - Capture ran on 21.3.0.0.0 and replay ran on <strong>23.26.1.0.0</strong>.</li>
+            <li>DB Time: n/a -&gt; n/a</li><li>Replay Divergence: Capture baseline -&gt; n/a</li>
+            <li>Functional assessment: Usable.</li><li>Performance assessment: Mixed (Mixed).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Functional Assessment</h2>
+        <div class="summary-block">
+          <p style="margin-top:0;">Status is Usable. Divergence is <strong>0.00%</strong> (Good). No material unreplayable-call sources detected in capture report. Capture report is not available, so workload representativeness cannot be verified.</p>
+          <ul class="clean">
+            <li><strong>Assessment status:</strong> Usable</li>
+            <li><strong>Divergence:</strong> <strong>0.00%</strong> (Good)</li>
+            <li><strong>Localized divergence:</strong> Yes</li>
+            <li><strong>Error source profile:</strong> No material unreplayable-call sources detected in capture report.</li>
+            <li><strong>Capture validity:</strong> Unknown - Database Capture Report is missing.</li>
+          </ul>
+          <details class="collapsible-wrap">
+            <summary>Show details</summary>
+            <div class="collapsible-details">
+            <p style="margin:14px 0 8px;"><strong>Highlights</strong></p>
+            <ul class="clean"><li>Capture report is not available, so workload representativeness cannot be verified.</li><li>Replay divergence is <strong>0.00%</strong> (Good).</li><li>No material unreplayable-call sources detected in capture report.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Capture Evidence</strong></p>
+            <ul class="clean"><li>Insufficient data</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Actions</strong></p>
+            <ul class="clean"><li>Functional fidelity is acceptable for decision-making, with noted caveats if any.</li><li>Include Database Capture Report in future runs to validate captured workload quality.</li></ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section>
+        <h2>Performance Assessment</h2>
+        <div class="summary-block">
+          <p style="margin-top:0;">Status is Mixed. DB Time outcome is insufficient data. Dominant mode is <strong>mixed</strong>.</p>
+          <ul class="clean">
+            <li><strong>Assessment status:</strong> Mixed</li>
+            <li><strong>DB Time outcome:</strong> Insufficient data</li>
+            <li><strong>Dominant runtime mix (2nd period):</strong> Mixed</li>
+            <li><strong>Session completion:</strong> Stable</li>
+          </ul>
+          
+          <details class="collapsible-wrap">
+            <summary>Show details</summary>
+            <div class="collapsible-details">
+            <p style="margin:14px 0 8px;"><strong>Highlights</strong></p>
+            <ul class="clean"><li>DB Time: n/a -&gt; n/a</li><li>CPU Time: n/a -&gt; n/a</li><li>Dominant execution mode: Mixed.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Top Bottlenecks (ADDM Comparison Insights)</strong></p>
+            <ul class="clean"><li>Insufficient data</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Key Findings</strong></p>
+            <ul class="clean"><li>Replay status: COMPLETED.</li><li>Upgrade validation: captureVersion 21.3.0.0.0 to replayVersion <strong>23.26.1.0.0</strong>.</li><li>DB Time comparison: insufficient data (dbTimeChangePct/dbTimeCapture/dbTimeReplay not provided).</li><li>CPU Time comparison: insufficient data (cpuTimeChangePct and related CPU metrics not provided).</li><li>Functional comparability signal: divergencePct is null, so replay divergence cannot be quantified; selectRowFetchDiffCount is 7.</li><li>Risk rating: Low; overall bottom line flagged as <strong>mixed</strong>.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Likely Causes</strong></p>
+            <ul class="clean"><li>Insufficient data: key performance comparison fields (DB Time/CPU) are not populated and the Database Capture Report is not included.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Actions</strong></p>
+            <ul class="clean"><li>Prioritize DB Time drivers first; do not use elapsed wall-clock time alone.</li><li>ADDM comparison data is limited; validate with additional diagnostics.</li><li>Top SQL by DB Time is unavailable in Compare Period report.</li></ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      
+
+      <section>
+        <h2>Final Verdict</h2>
+        <div class="summary-block">
+          <strong>⚠️ Degraded or <strong>mixed</strong> test result</strong>
+          <div style="margin-top:10px;">Replay status and fidelity checks are sufficient for a directional conclusion.</div>
+          <div style="margin-top:14px;"><strong>Why this result was assigned:</strong><ul class="clean"><li>Replay completed and the core comparability checks do not show a major fidelity failure.</li><li>Capture ran on 21.3.0.0.0 and replay ran on <strong>23.26.1.0.0</strong>.</li><li>Performance assessment for DB Time: Insufficient data.</li><li>Divergence assessment: <strong style="color:#166534;">Good</strong>.</li></ul></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Diagnostic Notes</h2>
+        <div class="findings"><article class="finding low"><div class="tag">Low</div><h3>No material issues flagged</h3><p>The available reports do not show a clear regression signal. Review the underlying reports for environment-specific nuances.</p></article></div>
+      </section>
+
+      <section>
+        <h2>Evidence Snapshot</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Replay status</td><td>COMPLETED</td></tr>
+          <tr><td>Replay divergence</td><td>-</td></tr>
+          <tr><td>Database Time change</td><td>-%</td></tr>
+          <tr><td>CPU Time change</td><td>-%</td></tr>
+          <tr><td>Replay average active sessions</td><td>9.96</td></tr>
+          <tr><td>AWR top replay wait</td><td>-</td></tr>
+          <tr><td>Generated</td><td>4/29/2026, 11:20:39 PM</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>LLM Token Usage</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>LLM narrative mode</td><td>Enabled</td></tr>
+          <tr><td>Model</td><td>gpt-5.2</td></tr>
+          <tr><td>Total tokens</td><td>1927</td></tr>
+          <tr><td>Prompt tokens</td><td>1414</td></tr>
+          <tr><td>Completion tokens</td><td>513</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <div class="prototype-section">
+          <h2>Prototype Verdict Criteria</h2>
+          <p style="margin:0;">This section explains the prototype-only scoring logic used to derive the Bottom Line and Risk Rating. It is intended as reviewer guidance and methodology, not as part of the replay performance findings themselves.</p>
+
+          <div class="prototype-subsection">
+            <h3>How Bottom Line Is Defined</h3>
+            <details class="collapsible-wrap">
+              <summary>Show details</summary>
+              <div class="collapsible-details">
+                <p style="margin-top:0;">This prototype uses a rule-based scoring approach, not an LLM, to assign the Bottom Line. Reviewers can use the table below to see the explicit threshold logic.</p>
+                <table>
+                  <tr><th>Outcome</th><th>Prototype Rule</th></tr>
+                  <tr><td><strong>PASS / good</strong></td><td>Assigned when replay is functionally usable and DB Time improves materially, with divergence below <strong>5%</strong> or clearly localized/non-critical.</td></tr><tr><td><strong>WARN / mixed</strong></td><td>Assigned when outcome is <strong>mixed</strong> or degraded: moderate divergence (5-<strong>20%</strong>), marginal DB Time movement, or unresolved comparability caveats.</td></tr><tr><td><strong>FAIL / bad</strong></td><td>Assigned when replay is invalid, including high divergence (&gt;<strong>20%</strong>), failed/incomplete replay, or severe comparability issues.</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+
+          <div class="prototype-subsection">
+            <h3>How Risk Rating Is Defined</h3>
+            <details class="collapsible-wrap">
+              <summary>Show details</summary>
+              <div class="collapsible-details">
+                <p style="margin-top:0;">Risk Rating is a separate roll-up of diagnostic findings. Each finding is assigned a severity and converted into a score:</p>
+                <ul class="clean">
+                  <li><strong>High finding</strong> = 35 points</li>
+                  <li><strong>Moderate finding</strong> = 20 points</li>
+                  <li><strong>Low finding</strong> = 8 points</li>
+                </ul>
+                <p>The total score is then mapped to the displayed Risk Rating:</p>
+                <table>
+                  <tr><th>Risk Rating</th><th>Prototype Rule</th></tr>
+                  <tr><td><strong>Low</strong></td><td>Total finding severity score below 60. Usually means only a few low or moderate issues were detected.</td></tr><tr><td><strong>Moderate</strong></td><td>Total finding severity score from 60 to 84. Usually means multiple moderate issues or one high issue plus other concerns were detected.</td></tr><tr><td><strong>High</strong></td><td>Total finding severity score 85 or above. Usually means several high-impact issues were detected in the replay analysis.</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      (function () {
+        const btn = document.getElementById("saveReportHtml");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            const doctype = "<!DOCTYPE html>\n";
+            const html = doctype + document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "replay-executive-summary-replay_reports-soerep_2.html";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+          });
+        }
+
+      })();
+    </script>
+  </body>
+</html>
