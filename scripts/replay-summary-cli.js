@@ -49,6 +49,14 @@ function usage() {
   ].join("\n");
 }
 
+function resolveDefaultReportsRoot(projectRoot) {
+  const preferred = path.join(projectRoot, "reports");
+  if (fs.existsSync(preferred) && fs.statSync(preferred).isDirectory()) {
+    return preferred;
+  }
+  return path.join(projectRoot, "tests/fixtures/dbrep_reports");
+}
+
 function findReportFile(replayDir, primaryMatchers, fallbackMatchers, contentMatchers = []) {
   const files = fs.readdirSync(replayDir)
     .filter((name) => /\.htm[l]?$/i.test(name))
@@ -454,7 +462,7 @@ async function main() {
 
   const projectRoot = path.resolve(__dirname, "..");
   const reportsRoot = path.resolve(
-    args.reportsRoot || process.env.REPORTS_ROOT || path.join(projectRoot, "tests/fixtures/dbrep_reports")
+    args.reportsRoot || process.env.REPORTS_ROOT || resolveDefaultReportsRoot(projectRoot)
   );
 
   const app = loadCoreParser(projectRoot);

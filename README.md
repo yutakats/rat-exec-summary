@@ -23,6 +23,8 @@ The replay flow generates an executive summary from three Oracle Enterprise Mana
   Shared parser/scoring logic (`replay-summary-core.js`, `spa-summary-core.js`).
 - `/Users/yutaka/Documents/codex-1/packages/report-models`
   Shared schema/model assets for summary payloads.
+- `/Users/yutaka/Documents/codex-1/reports`
+  Default local input folder for replay HTML files.
 - `/Users/yutaka/Documents/codex-1/tests`
   Unit/integration scaffolding and replay report fixtures.
 - `/Users/yutaka/Documents/codex-1/docs`
@@ -55,7 +57,7 @@ You can generate Replay executive summary HTML directly from the command line.
    - `OPENAI_API_KEY=... OPENAI_BASE_URL=https://<gateway-host> node /Users/yutaka/Documents/codex-1/scripts/replay-summary-cli.js --report-dir /path/to/replay22 --use-llm --out /tmp/replay-22-summary-llm.html`
 
 Optional flags:
-- `--reports-root <dir>` override report root (defaults to `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports` or `REPORTS_ROOT` env var)
+- `--reports-root <dir>` override report root (defaults to `/Users/yutaka/Documents/codex-1/reports`; falls back to `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports` if `reports/` is absent)
 - `--report-dir <dir>` read report HTML files directly from a local folder (alternative to `--replay-id`)
 - `--include-awr-deep-dive` include the AWR drill-down section
 - `--use-llm` apply optional LLM narrative rewrite in CLI mode
@@ -79,7 +81,8 @@ You can also open `/Users/yutaka/Documents/codex-1/apps/web/spa.html` directly i
 ## Data and Security Defaults
 
 - Report fixtures are read from:
-  - `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports`
+  - `/Users/yutaka/Documents/codex-1/reports` (default)
+  - fallback: `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports`
 - Replay IDs are validated with a strict allowlist regex.
 - API is bound to `127.0.0.1` for local use.
 - LLM path requires `OPENAI_API_KEY` and can be disabled.

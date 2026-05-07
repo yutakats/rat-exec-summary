@@ -10,6 +10,7 @@
 ## Troubleshooting
 
 - If `/api/replay-reports` fails, verify fixture path:
-  - `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports`
+  - `/Users/yutaka/Documents/codex-1/reports` (default)
+  - fallback: `/Users/yutaka/Documents/codex-1/tests/fixtures/dbrep_reports`
 - If LLM rewrite fails, verify key/model env vars and restart server.
 - If popup is blank, allow browser popups and retry.

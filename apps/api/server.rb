@@ -6,7 +6,12 @@ require "uri"
 ROOT = File.expand_path("../..", __dir__)
 PORT = Integer(ENV.fetch("PORT", "4567"))
 OPENAI_MODEL = ENV.fetch("OPENAI_MODEL", "gpt-4.1")
-REPORTS_ROOT = ENV.fetch("REPORTS_ROOT", File.join(ROOT, "tests/fixtures/dbrep_reports"))
+DEFAULT_REPORTS_ROOT = File.join(ROOT, "reports")
+LEGACY_REPORTS_ROOT = File.join(ROOT, "tests/fixtures/dbrep_reports")
+REPORTS_ROOT = ENV.fetch(
+  "REPORTS_ROOT",
+  Dir.exist?(DEFAULT_REPORTS_ROOT) ? DEFAULT_REPORTS_ROOT : LEGACY_REPORTS_ROOT
+)
 
 def find_report_file(replay_dir, primary_globs:, fallback_patterns:, content_patterns: [])
   primary_globs.each do |glob_pattern|
