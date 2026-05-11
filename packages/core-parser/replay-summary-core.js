@@ -1461,10 +1461,10 @@
   }
 
   function verdictLabelText(text) {
-    if (/Unsuccessful/i.test(text)) {
+    if (/\b(Unsuccessful|Invalid|Bad|Failed|Degraded)\b/i.test(text)) {
       return "bad";
     }
-    if (/Successful/i.test(text)) {
+    if (/\b(Successful|Good|Pass)\b/i.test(text)) {
       return "good";
     }
     return "mixed";
@@ -1603,6 +1603,7 @@
     const replayOptions = parsed.dbReplay.replayOptions || {};
     const captureCores = parseCoreCount(captureCpu.topology)?.cores;
     const replayCores = parseCoreCount(replayCpu.topology)?.cores;
+    const cpuMismatch = Boolean(replayCores && captureCores && replayCores < captureCores);
     const topReplayWait = parsed.awr.topEvents.find((event) => event.secondEvent && event.secondEvent !== "-");
     const cpuThrottling = parsed.compare.addm["Resource Manager CPU Throttling"];
     const hardParseLiteral = parsed.compare.addm["Hard Parse Due to Literal Usage"];
@@ -2008,7 +2009,9 @@
       bottomLineDetail = "❌ Invalid replay result";
     } else if (replayVerdict === "good") {
       bottomLineIntro = "PASS";
-      bottomLineDetail = "✅ Good replay result";
+      bottomLineDetail = cpuMismatch
+        ? "✅ Good replay result (with comparability caveat: fewer replay CPU cores than capture)"
+        : "✅ Good replay result";
     }
 
     const overallExecutiveSummary = {
@@ -2473,11 +2476,18 @@
   function renderFinding(finding) {
     return `
       <article class="finding ${finding.severity.toLowerCase()}">
-        <div class="tag">${finding.severity}</div>
-        <h3>${finding.title}</h3>
-        <p><strong>Issue:</strong> ${finding.issue}</p>
-        <p><strong>Likely cause:</strong> ${finding.cause}</p>
-        <p><strong>Recommendation:</strong> ${finding.recommendation}</p>
+        <div class="finding-topline">
+          <div class="tag">${finding.severity}</div>
+          <h3>${finding.title}</h3>
+          <details class="collapsible-wrap finding-details">
+            <summary>Details</summary>
+            <div class="collapsible-details">
+              <p><strong>Issue:</strong> ${finding.issue}</p>
+              <p><strong>Likely cause:</strong> ${finding.cause}</p>
+              <p><strong>Recommendation:</strong> ${finding.recommendation}</p>
+            </div>
+          </details>
+        </div>
       </article>
     `;
   }
@@ -2536,6 +2546,22 @@
     const includeAwrDeepDive = Boolean(
       summary.options?.includeAwrDeepDive || summary.projectSections.includeAwrDeepDive
     );
+    const dbTimeChangePct = summary.parsed.compare.mainPerformance["Database Time"]?.changePct;
+    const divergencePct = summary.parsed.compare.divergence.percent;
+    const divergenceLevel = summary.parsed.compare.divergence.level || "UNKNOWN";
+    const dbTimePhrase =
+      typeof dbTimeChangePct === "number"
+        ? dbTimeChangePct < 0
+          ? `Replay DB time improved by ${Math.abs(dbTimeChangePct).toFixed(1)}% versus capture.`
+          : dbTimeChangePct > 0
+            ? `Replay DB time regressed by ${Math.abs(dbTimeChangePct).toFixed(1)}% versus capture.`
+            : "Replay DB time is unchanged versus capture."
+        : "Replay DB time comparison is unavailable.";
+    const divergencePhrase =
+      typeof divergencePct === "number"
+        ? `Divergence is ${divergencePct.toFixed(2)}% of calls (Oracle label: ${divergenceLevel}).`
+        : `Divergence is unavailable (Oracle label: ${divergenceLevel}).`;
+    const replayStatusLine = `${testOutcome.status ? `Replay finished with status ${testOutcome.status}.` : "Replay finished."} ${dbTimePhrase} ${divergencePhrase} Overall verdict: ${summary.verdict.label}.`;
     const finalVerdict = summary.projectSections.finalVerdict || {};
     const scoringRows = summary.projectSections.scoringExplanation
       .map(
@@ -2705,7 +2731,7 @@
     const performanceExecutiveSummary = [
       `Status is ${performanceAssessmentSection.status || performanceAssessment.overall || "insufficient data"}.`,
       `DB Time outcome is ${(performanceAssessmentSection.dbTimeVerdict || performanceAssessment.dbTime || "insufficient data").toLowerCase()}.`,
-      `Dominant mode is ${(performanceAssessmentSection.workloadClass || "insufficient data").toLowerCase()}.`,
+      `Dominant resource consumption at replay is ${(performanceAssessmentSection.workloadClass || "insufficient data").toLowerCase()}.`,
       topBottleneck ? `Top bottleneck signal: ${topBottleneck}.` : null,
       topReplaySqlId ? `Top replay SQL by DB Time starts with ${topReplaySqlId}.` : null,
     ]
@@ -2778,6 +2804,9 @@
         line-height: 1.1;
         letter-spacing: -0.02em;
       }
+      .hero-replay-name {
+        font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+      }
       .sub {
         color: var(--muted);
         margin: 0;
@@ -2834,10 +2863,32 @@
       .finding.moderate .tag { background: rgba(146, 64, 14, 0.12); color: var(--moderate); }
       .finding.low .tag { background: rgba(22, 101, 52, 0.12); color: var(--low); }
       .finding h3 {
-        margin: 0 0 8px;
+        margin: 0;
         font-size: 1.05rem;
       }
-      .finding p {
+      .finding-topline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .finding-topline .tag {
+        margin-bottom: 0;
+      }
+      .finding-topline h3 {
+        flex: 1 1 auto;
+        min-width: 220px;
+      }
+      .finding-details {
+        margin-top: 0;
+        margin-left: auto;
+      }
+      .finding-details[open] {
+        flex-basis: 100%;
+        margin-left: 0;
+        margin-top: 10px;
+      }
+      .finding .collapsible-details p {
         margin: 8px 0 0;
       }
       .inline-hot {
@@ -3032,9 +3083,9 @@
   <body>
     <main>
       <section class="hero">
-        <div class="eyebrow">Enterprise Manager Database Replay Executive Summary</div>
-        <h1>${replayName}</h1>
-        <p class="sub">${summary.headline}</p>
+        <div class="eyebrow">Oracle Database Replay Executive Summary</div>
+        <h1 class="hero-replay-name">Replay Name: ${replayName}</h1>
+        <p class="sub">${escapeHtml(replayStatusLine)}</p>
         <div class="verdict" style="color:${verdictTone.fg};background:${verdictTone.bg};margin-top:16px;">
           ${summary.verdict.icon} ${highlightInline(finalVerdict.banner || `Bottom line: ${summary.verdict.label}`)}
         </div>
@@ -3112,7 +3163,7 @@
           <ul class="clean">
             <li><strong>Assessment status:</strong> ${highlightInline(performanceAssessmentSection.status || performanceAssessment.overall || "Insufficient data")}</li>
             <li><strong>DB Time outcome:</strong> ${highlightInline(performanceAssessmentSection.dbTimeVerdict || performanceAssessment.dbTime || "Insufficient data")}</li>
-            <li><strong>Dominant runtime mix (2nd period):</strong> ${highlightInline(performanceAssessmentSection.workloadClass || "Insufficient data")}</li>
+            <li><strong>Dominant resource consumed at Replay:</strong> ${highlightInline(performanceAssessmentSection.workloadClass || "Insufficient data")}</li>
             <li><strong>Session completion:</strong> ${highlightInline(performanceAssessment.sessionCompletion || "Insufficient data")}</li>
           </ul>
           ${performanceChartsHtml ? `<div class="metric-charts">${performanceChartsHtml}</div>` : ""}
@@ -3221,7 +3272,7 @@
       </section>
 
       <section>
-        <h2>Evidence Snapshot</h2>
+        <h2>Key Data Points</h2>
         <table>
           <tr><th>Metric</th><th>Value</th></tr>
           <tr><td>Replay status</td><td>${summary.parsed.dbReplay.dbHeader["Replay Status"] || "-"}</td></tr>
