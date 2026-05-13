@@ -23,6 +23,8 @@ The replay flow generates an executive summary from three Oracle Enterprise Mana
   Shared parser/scoring logic (`replay-summary-core.js`, `spa-summary-core.js`).
 - `/Users/yutaka/Documents/codex-1/packages/report-models`
   Shared schema/model assets for summary payloads.
+- `/Users/yutaka/Documents/codex-1/java-db-replay-summary`
+  Independent Java 8 command-line utility for Replay executive summary generation.
 - `/Users/yutaka/Documents/codex-1/reports`
   Default local input folder for replay HTML files.
 - `/Users/yutaka/Documents/codex-1/tests`
@@ -63,6 +65,22 @@ Optional flags:
 - `--use-llm` apply optional LLM narrative rewrite in CLI mode
 - `--openai-model <model>` override LLM model (defaults to `OPENAI_MODEL` or `gpt-4.1`)
 - `--openai-base-url <url>` override LLM API base URL (defaults to `OPENAI_BASE_URL` or `https://api.openai.com`)
+
+## Java Command-Line Utility
+
+The Java version is kept separate from the JavaScript implementation and can run as an independent Java 8 utility without third-party dependencies.
+
+```sh
+mkdir -p /Users/yutaka/Documents/codex-1/java-db-replay-summary/build/classes
+
+javac -source 1.8 -target 1.8 -d /Users/yutaka/Documents/codex-1/java-db-replay-summary/build/classes \
+  /Users/yutaka/Documents/codex-1/java-db-replay-summary/src/main/java/com/oracle/replay/summary/ReplaySummaryCli.java
+
+java -cp /Users/yutaka/Documents/codex-1/java-db-replay-summary/build/classes \
+  com.oracle.replay.summary.ReplaySummaryCli \
+  --report-dir /path/to/replay22 \
+  --out /tmp/replay-22-java-summary.html
+```
 
 Notes for non-OpenAI gateways:
 - If your gateway already exposes `/v1`, set `OPENAI_BASE_URL` to that root (for example `https://host/v1`).

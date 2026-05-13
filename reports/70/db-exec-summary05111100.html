@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Replay Executive Summary reports</title>
+    <style>
+      :root {
+        --bg: #fbfaf6;
+        --ink: #172033;
+        --muted: #526174;
+        --line: rgba(23, 32, 51, 0.12);
+        --panel: white;
+        --accent: #0f766e;
+        --accent-soft: rgba(15, 118, 110, 0.12);
+        --high: #991b1b;
+        --moderate: #92400e;
+        --low: #166534;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font: 16px/1.55 "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(45, 212, 191, 0.18), transparent 22%),
+          linear-gradient(180deg, #fffefb 0%, var(--bg) 100%);
+      }
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 36px 20px 64px;
+      }
+      .hero {
+        padding: 28px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(236,253,245,0.92));
+        border: 1px solid var(--line);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .hero-replay-name {
+        font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0;
+        max-width: 860px;
+      }
+      .meta, .cards, .findings {
+        display: grid;
+        gap: 16px;
+      }
+      .meta, .cards {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        margin-top: 18px;
+      }
+      .card, .finding {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel);
+        padding: 18px;
+      }
+      .eyebrow {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+      .value {
+        margin-top: 8px;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+      section {
+        margin-top: 28px;
+      }
+      h2 {
+        margin: 0 0 14px;
+        font-size: 1.35rem;
+      }
+      h3 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+      .tag {
+        display: inline-block;
+        margin-bottom: 12px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .finding.high .tag { background: rgba(153, 27, 27, 0.12); color: var(--high); }
+      .finding.moderate .tag { background: rgba(146, 64, 14, 0.12); color: var(--moderate); }
+      .finding.low .tag { background: rgba(22, 101, 52, 0.12); color: var(--low); }
+      .finding h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+      .finding-topline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .finding-topline .tag {
+        margin-bottom: 0;
+      }
+      .finding-topline h3 {
+        flex: 1 1 auto;
+        min-width: 220px;
+      }
+      .finding-details {
+        margin-top: 0;
+        margin-left: auto;
+      }
+      .finding-details[open] {
+        flex-basis: 100%;
+        margin-left: 0;
+        margin-top: 10px;
+      }
+      .finding .collapsible-details p {
+        margin: 8px 0 0;
+      }
+      .inline-hot {
+        color: #b91c1c;
+        background: rgba(185, 28, 28, 0.08);
+        border-radius: 8px;
+        padding: 2px 6px;
+        font: 700 0.92em/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        background: #f8fafc;
+      }
+      .summary-block {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: white;
+        padding: 18px;
+      }
+      .verdict {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 800;
+      }
+      .prototype-note {
+        margin-top: 12px;
+        border: 1px dashed rgba(23, 32, 51, 0.18);
+        border-radius: 16px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+      .prototype-note p {
+        margin: 0;
+      }
+      .criteria {
+        margin-top: 10px;
+      }
+      .criteria strong {
+        display: block;
+        margin-top: 10px;
+      }
+      .criteria ul {
+        margin: 6px 0 0 0;
+        padding-left: 20px;
+      }
+      .criteria li {
+        margin: 4px 0;
+      }
+      .prototype-section {
+        border: 1px solid rgba(15, 118, 110, 0.18);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(240, 253, 250, 0.95), rgba(248, 250, 252, 0.98));
+        padding: 20px;
+      }
+      .prototype-section h2 {
+        margin-bottom: 10px;
+      }
+      .prototype-subsection {
+        margin-top: 18px;
+        border: 1px solid rgba(23, 32, 51, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 16px;
+      }
+      .prototype-subsection:first-of-type {
+        margin-top: 12px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 14px;
+      }
+      .save-btn {
+        border: 1px solid var(--line);
+        background: white;
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .save-btn:hover {
+        border-color: rgba(23, 32, 51, 0.28);
+      }
+      details.collapsible-wrap {
+        margin-top: 10px;
+      }
+      details.collapsible-wrap > summary {
+        list-style: none;
+        border: 1px solid var(--line);
+        background: #f8fafc;
+        color: var(--ink);
+        border-radius: 12px;
+        padding: 6px 10px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      details.collapsible-wrap > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.collapsible-wrap > summary::before {
+        content: "+";
+        width: 18px;
+        text-align: center;
+      }
+      details.collapsible-wrap[open] > summary::before {
+        content: "-";
+      }
+      .collapsible-details {
+        margin-top: 10px;
+      }
+      .metric-charts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+        margin: 8px 0 14px;
+      }
+      .metric-chart {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #fcfdfd;
+        padding: 10px 12px;
+      }
+      .metric-chart h4 {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+      }
+      .metric-row {
+        margin: 8px 0;
+      }
+      .metric-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+      .bar-track {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+      }
+      .bar-fill.capture {
+        background: #2563eb;
+      }
+      .bar-fill.replay {
+        background: #dc2626;
+      }
+      ul.clean {
+        margin: 0;
+        padding-left: 20px;
+      }
+      ul.clean li {
+        margin: 10px 0;
+      }
+      @media print {
+        .actions {
+          display: none;
+        }
+        .collapsible-details {
+          display: block !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Oracle Database Replay Executive Summary</div>
+        <h1 class="hero-replay-name">Replay Name: REPLAY_soe_05112026_2</h1>
+        <p class="sub">Replay finished with status COMPLETED. Replay DB time regressed by 247.2% versus capture. Divergence is 0.06% of calls (Oracle label: LOW). Overall verdict: mixed.</p>
+        <div class="verdict" style="color:#92400e;background:rgba(146,64,14,0.12);margin-top:16px;">
+          WARN Bottom line: <strong>bad</strong>
+        </div>
+        <div class="meta">
+          <div class="card"><div class="eyebrow">Risk Rating</div><div class="value">Moderate</div></div>
+          <div class="card"><div class="eyebrow">Replay Database</div><div class="value">DB26(23.26.1.0.0)</div></div>
+          <div class="card"><div class="eyebrow">Capture Database</div><div class="value">DB21(21.3.0.0.0)</div></div>
+        </div>
+        <div class="actions">
+          <button id="saveReportHtml" class="save-btn" type="button">Save as HTML</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Executive Summary</h2>
+        <div class="summary-block">Database Replay REPLAY_soe_05112026_2 completed successfully on PDB1 and serves as an upgrade validation (capture 21.3.0.0.0 → replay <strong>23.26.1.0.0</strong>). Performance regressed materially: Database Time increased from 9087.13 seconds to 31545.58 seconds (+<strong>247.15%</strong>), with CPU Time rising similarly (+<strong>247.07%</strong>). Functional comparability is strong based on measured divergence of <strong>0.06%</strong> (Oracle label: <strong>LOW</strong>), and the capture appears representative (957,163 user calls, 0 captured errors, INCLUDE USER=SOE). However, comparability for performance is weakened by environment differences, notably fewer CPU cores in replay (2 → 1) and slightly lower physical memory (15.33 G → 15.17 G).</div>
+      </section>
+
+      <section>
+        <h2>Replay At-a-Glance</h2>
+        <div class="summary-block">
+          <ul class="clean">
+            <li><strong>Verdict:</strong> degraded</li>
+            <li><strong>Test outcome:</strong> COMPLETED (valid: Yes) - Replay completed and the core comparability checks do not show a major fidelity failure.</li>
+            <li><strong>Test objective:</strong> Version upgrade - Capture ran on 21.3.0.0.0 and replay ran on <strong>23.26.1.0.0</strong>.</li>
+            <li>DB Time: 9087.13 seconds -&gt; 31545.58 seconds (+<strong>247.15%</strong>)</li><li>Replay Divergence: Capture baseline -&gt; <strong>0.06%</strong></li>
+            <li>Functional assessment: Usable.</li><li>Performance assessment: Degraded (Wait/I/O-bound).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Functional Assessment</h2>
+        <div class="summary-block">
+          <p style="margin-top:0;">Status is Usable. Divergence is <strong>0.06%</strong> (Good). Unreplayable-call sources include potentially core workload identities. Capture validity: Likely representative.</p>
+          <ul class="clean">
+            <li><strong>Assessment status:</strong> Usable</li>
+            <li><strong>Divergence:</strong> <strong>0.06%</strong> (Good)</li>
+            <li><strong>Localized divergence:</strong> Yes</li>
+            <li><strong>Error source profile:</strong> Unreplayable-call sources include potentially core workload identities.</li>
+            <li><strong>Capture validity:</strong> Likely representative - Capture includes meaningful application sessions and completed cleanly.</li>
+          </ul>
+          <details class="collapsible-wrap">
+            <summary>Show details</summary>
+            <div class="collapsible-details">
+            <p style="margin:14px 0 8px;"><strong>Highlights</strong></p>
+            <ul class="clean"><li>Capture validity: Likely representative.</li><li>Unreplayable activity includes potentially core workloads and needs review.</li><li>Background activity is visible (SYS / oracle@sb01 (M002)).</li><li>Replay divergence is <strong>0.06%</strong> (Good).</li><li>Unreplayable-call sources include potentially core workload identities.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Capture Evidence</strong></p>
+            <ul class="clean"><li>Capture status: COMPLETED.</li><li>User calls captured: 957,163.</li><li>Captured calls with errors: 0.</li><li>Capture filters: INCLUDE USER=SOE.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Actions</strong></p>
+            <ul class="clean"><li>Functional fidelity is acceptable for decision-making, with noted caveats if any.</li></ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section>
+        <h2>Performance Assessment</h2>
+        <div class="summary-block">
+          <p style="margin-top:0;">Status is Degraded. DB Time outcome is regressed. Dominant resource consumption at replay is wait/i/o-bound. Top bottleneck signal: PL/SQL Execution (<strong>5.96%</strong> replay impact share). Top replay SQL by DB Time starts with c13sma6rkr27c.</p>
+          <ul class="clean">
+            <li><strong>Assessment status:</strong> Degraded</li>
+            <li><strong>DB Time outcome:</strong> Regressed</li>
+            <li><strong>Dominant resource consumed at Replay:</strong> Wait/I/O-bound</li>
+            <li><strong>Session completion:</strong> Stable</li>
+          </ul>
+          <div class="metric-charts"><div class="metric-chart">
+        <h4>DB Time</h4>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Capture</span><strong>9087.13 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill capture" style="width:29%;"></div></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Replay</span><strong>31545.58 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill replay" style="width:100%;"></div></div>
+        </div>
+      </div><div class="metric-chart">
+        <h4>CPU Time</h4>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Capture</span><strong>1022.41 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill capture" style="width:29%;"></div></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Replay</span><strong>3548.44 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill replay" style="width:100%;"></div></div>
+        </div>
+      </div><div class="metric-chart">
+        <h4>User I/O Wait Time</h4>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Capture</span><strong>1258.69 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill capture" style="width:100%;"></div></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-meta"><span>Replay</span><strong>214.48 seconds</strong></div>
+          <div class="bar-track"><div class="bar-fill replay" style="width:17%;"></div></div>
+        </div>
+      </div></div>
+          <details class="collapsible-wrap">
+            <summary>Show details</summary>
+            <div class="collapsible-details">
+            <p style="margin:14px 0 8px;"><strong>Highlights</strong></p>
+            <ul class="clean"><li>DB Time: 9087.13 seconds -&gt; 31545.58 seconds (+<strong>247.15%</strong>)</li><li>CPU Time: 1022.41 seconds -&gt; 3548.44 seconds (+<strong>247.07%</strong>)</li><li>User I/O Wait Time: 1258.69 seconds -&gt; 214.48 seconds (-<strong>82.96%</strong>)</li><li>Dominant execution mode: Wait/I/O-bound.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Top Bottlenecks (ADDM Comparison Insights)</strong></p>
+            <ul class="clean"><li>PL/SQL Execution (<strong>5.96%</strong> replay impact share)</li><li>Commits and Rollbacks (<strong>3.47%</strong> replay impact share)</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Key Findings</strong></p>
+            <ul class="clean"><li>Replay status: COMPLETED; capture status: COMPLETED; capture report available: true.</li><li>Upgrade validation: captureVersion 21.3.0.0.0 → replayVersion <strong>23.26.1.0.0</strong>.</li><li>Database Time regressed/increased: 9087.13 seconds → 31545.58 seconds (+<strong>247.15%</strong>).</li><li>CPU Time increased: +<strong>247.07%</strong>; CPU/DB Time ratio remained constant at <strong>11.25%</strong> (capture) and <strong>11.25%</strong> (replay).</li><li>Measured divergence is <strong>0.06%</strong> (Oracle label: <strong>LOW</strong>), supporting strong functional comparability; selectRowFetchDiffCount = 0.</li><li>Workload capture quality indicators: 957,163 user calls captured; captured calls with errors: 0; filter INCLUDE USER=SOE.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Likely Causes</strong></p>
+            <ul class="clean"><li>Replay environment is CPU-downgraded versus capture (<strong>CPU cores decreased from 2 to 1</strong>).</li><li>Replay environment has slightly less physical memory than capture (15.33 G → 15.17 G).</li><li>Configuration differences between environments may be contributing to the observed DB Time and CPU Time increases.</li></ul>
+            <p style="margin:14px 0 8px;"><strong>Actions</strong></p>
+            <ul class="clean"><li>Prioritize DB Time drivers first; do not use elapsed wall-clock time alone.</li><li>Use Compare Period ADDM deltas to target highest-impact waits before broad tuning.</li><li>Review top replay SQL by DB Time (c13sma6rkr27c, 7r7636982atn9, 5mddt5kt45rg3).</li></ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      
+
+      <section>
+        <h2>Final Verdict</h2>
+        <div class="summary-block">
+          <strong>⚠️ Degraded or <strong>mixed</strong> test result</strong>
+          <div style="margin-top:10px;">Replay status and fidelity checks are sufficient for a directional conclusion.</div>
+          <div style="margin-top:14px;"><strong>Why this result was assigned:</strong><ul class="clean"><li>Replay completed and the core comparability checks do not show a major fidelity failure.</li><li>Capture ran on 21.3.0.0.0 and replay ran on <strong>23.26.1.0.0</strong>.</li><li>Performance assessment for DB Time: Regressed.</li><li>Divergence assessment: <strong style="color:#166534;">Good</strong>.</li></ul></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Diagnostic Notes</h2>
+        <div class="findings">
+      <article class="finding moderate">
+        <div class="finding-topline">
+          <div class="tag">Moderate</div>
+          <h3>Replay divergence is present</h3>
+          <details class="collapsible-wrap finding-details">
+            <summary>Details</summary>
+            <div class="collapsible-details">
+              <p><strong>Issue:</strong> LOW divergence with 0.06% of calls diverging.</p>
+              <p><strong>Likely cause:</strong> The replay does not fully match the original capture behavior.</p>
+              <p><strong>Recommendation:</strong> Validate schema statistics, application data parity, initialization parameters, and replay setup before drawing strong performance conclusions.</p>
+            </div>
+          </details>
+        </div>
+      </article>
+    
+      <article class="finding high">
+        <div class="finding-topline">
+          <div class="tag">High</div>
+          <h3>Replay performance regressed</h3>
+          <details class="collapsible-wrap finding-details">
+            <summary>Details</summary>
+            <div class="collapsible-details">
+              <p><strong>Issue:</strong> Database Time increased by 247.15% in replay.</p>
+              <p><strong>Likely cause:</strong> Replay spent more total DB time than capture, indicating reduced throughput or higher contention.</p>
+              <p><strong>Recommendation:</strong> Investigate the replay's top waits, SQL regressions, and hardware saturation before promoting the tested change.</p>
+            </div>
+          </details>
+        </div>
+      </article>
+    
+      <article class="finding moderate">
+        <div class="finding-topline">
+          <div class="tag">Moderate</div>
+          <h3>Replay shifted toward CPU-heavy execution</h3>
+          <details class="collapsible-wrap finding-details">
+            <summary>Details</summary>
+            <div class="collapsible-details">
+              <p><strong>Issue:</strong> CPU time increased by 247.1% and now represents 11.25% of replay DB time.</p>
+              <p><strong>Likely cause:</strong> The target system is spending a larger share of time on CPU, which can happen after I/O bottlenecks are reduced, when SQL plans change, or when parsing and metadata work increase.</p>
+              <p><strong>Recommendation:</strong> Review top SQL, execution plans, and CPU headroom to ensure the improvement does not create a new CPU ceiling.</p>
+            </div>
+          </details>
+        </div>
+      </article>
+    </div>
+      </section>
+
+      <section>
+        <h2>Key Data Points</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Replay status</td><td>COMPLETED</td></tr>
+          <tr><td>Replay divergence</td><td>LOW (0.06%)</td></tr>
+          <tr><td>Database Time change</td><td>247.15%</td></tr>
+          <tr><td>CPU Time change</td><td>247.07%</td></tr>
+          <tr><td>Replay average active sessions</td><td>15.31</td></tr>
+          <tr><td>AWR top replay wait</td><td>-</td></tr>
+          <tr><td>Generated</td><td>5/11/2026, 11:54:53 PM</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>LLM Token Usage</h2>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>LLM narrative mode</td><td>Enabled</td></tr>
+          <tr><td>Model</td><td>gpt-5.2</td></tr>
+          <tr><td>Total tokens</td><td>3842</td></tr>
+          <tr><td>Prompt tokens</td><td>3034</td></tr>
+          <tr><td>Completion tokens</td><td>808</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <div class="prototype-section">
+          <h2>Prototype Verdict Criteria</h2>
+          <p style="margin:0;">This section explains the prototype-only scoring logic used to derive the Bottom Line and Risk Rating. It is intended as reviewer guidance and methodology, not as part of the replay performance findings themselves.</p>
+
+          <div class="prototype-subsection">
+            <h3>How Bottom Line Is Defined</h3>
+            <details class="collapsible-wrap">
+              <summary>Show details</summary>
+              <div class="collapsible-details">
+                <p style="margin-top:0;">This prototype uses a rule-based scoring approach, not an LLM, to assign the Bottom Line. Reviewers can use the table below to see the explicit threshold logic.</p>
+                <table>
+                  <tr><th>Outcome</th><th>Prototype Rule</th></tr>
+                  <tr><td><strong>PASS / good</strong></td><td>Assigned when replay is functionally usable and DB Time improves materially, with divergence below <strong>5%</strong> or clearly localized/non-critical.</td></tr><tr><td><strong>WARN / mixed</strong></td><td>Assigned when outcome is <strong>mixed</strong> or degraded: moderate divergence (5-<strong>20%</strong>), marginal DB Time movement, or unresolved comparability caveats.</td></tr><tr><td><strong>FAIL / bad</strong></td><td>Assigned when replay is invalid, including high divergence (&gt;<strong>20%</strong>), failed/incomplete replay, or severe comparability issues.</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+
+          <div class="prototype-subsection">
+            <h3>How Risk Rating Is Defined</h3>
+            <details class="collapsible-wrap">
+              <summary>Show details</summary>
+              <div class="collapsible-details">
+                <p style="margin-top:0;">Risk Rating is a separate roll-up of diagnostic findings. Each finding is assigned a severity and converted into a score:</p>
+                <ul class="clean">
+                  <li><strong>High finding</strong> = 35 points</li>
+                  <li><strong>Moderate finding</strong> = 20 points</li>
+                  <li><strong>Low finding</strong> = 8 points</li>
+                </ul>
+                <p>The total score is then mapped to the displayed Risk Rating:</p>
+                <table>
+                  <tr><th>Risk Rating</th><th>Prototype Rule</th></tr>
+                  <tr><td><strong>Low</strong></td><td>Total finding severity score below 60. Usually means only a few low or moderate issues were detected.</td></tr><tr><td><strong>Moderate</strong></td><td>Total finding severity score from 60 to 84. Usually means multiple moderate issues or one high issue plus other concerns were detected.</td></tr><tr><td><strong>High</strong></td><td>Total finding severity score 85 or above. Usually means several high-impact issues were detected in the replay analysis.</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script>
+      (function () {
+        const btn = document.getElementById("saveReportHtml");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            const doctype = "<!DOCTYPE html>\n";
+            const html = doctype + document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "replay-executive-summary-reports-replay_soe_05112026_2.html";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+          });
+        }
+
+      })();
+    </script>
+  </body>
+</html>
