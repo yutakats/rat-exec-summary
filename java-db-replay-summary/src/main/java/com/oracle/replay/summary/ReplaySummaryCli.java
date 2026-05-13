@@ -188,9 +188,24 @@ public final class ReplaySummaryCli {
     String divergenceLevel;
     Double divergencePct;
     String verdict;
+    String verdictIcon;
+    String bottomLineBanner;
+    String bottomLineDetail;
     String tone;
     String riskRating;
     String headline;
+    String testObjectiveType;
+    String testObjectiveReason;
+    String testOutcomeValid;
+    String testOutcomeReason;
+    String replayVerdict;
+    String capturePlatform;
+    String replayPlatform;
+    CpuUsage captureCpu;
+    CpuUsage replayCpu;
+    InstanceInfo captureInstance;
+    InstanceInfo replayInstance;
+    FunctionalAssessment functionalAssessment;
     List<String> findings = new ArrayList<String>();
     List<String> likelyCauses = new ArrayList<String>();
     List<String> actions = new ArrayList<String>();
@@ -210,6 +225,49 @@ public final class ReplaySummaryCli {
     String replayTotal;
     Double captureDbPct;
     Double replayDbPct;
+  }
+
+  private static final class CpuUsage {
+    String system;
+    String topology;
+    String hostUsage;
+    String sessionsOnCpu;
+    String runQueue;
+  }
+
+  private static final class InstanceInfo {
+    String cpuCores;
+    String cpuSockets;
+    String physicalMemory;
+  }
+
+  private static final class CaptureInfo {
+    boolean available;
+    String status;
+    Double userCallsCaptured;
+    Double userCallsWithErrors;
+    int filterCount;
+    int topSessionCount;
+    int coreSessionCount;
+    int unreplayableCount;
+    int nonCoreUnreplayableCount;
+    int backgroundSessionCount;
+  }
+
+  private static final class CaptureValidity {
+    String representative;
+    String reason;
+    List<String> evidence = new ArrayList<String>();
+  }
+
+  private static final class FunctionalAssessment {
+    String status;
+    String divergenceLabel;
+    String localizedDivergence;
+    String errorSourceSummary;
+    CaptureValidity captureValidity;
+    List<String> highlights = new ArrayList<String>();
+    List<String> actions = new ArrayList<String>();
   }
 
   private static final class AddmFinding {
@@ -257,19 +315,26 @@ public final class ReplaySummaryCli {
       Map<String, Pair> replayStats = pairRows(Html.tableRows(Html.findTableBySummary(bundle.dbReplayHtml, "capture/replay statistics")));
       Map<String, DivergenceItem> replayDivergence = divergenceRows(Html.tableRows(Html.findTableBySummary(bundle.dbReplayHtml, "replay divergence summary")));
 
-      Map<String, Pair> databaseInfo = pairRows(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Information About Databases")));
+      Map<String, Pair> databaseInfo = comparePairRows(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Information About Databases")));
       Map<String, Metric> mainPerformance = mainPerformance(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Main Performance Statistics")));
       Map<String, DivergenceItem> compareDivergence = compareDivergence(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Replay Divergence")));
+      Map<String, CpuUsage> cpuUsage = cpuUsage(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "CPU Usage")));
 
       summary.replayName = firstNonBlank(dbHeader.get("Replay Name"), getReplay(replayInfo, "Name"), "Replay " + bundle.replayId);
       summary.replayStatus = normalizeStatus(firstNonBlank(dbHeader.get("Replay Status"), getReplay(replayInfo, "Status"), "UNKNOWN"));
       summary.replayVersion = firstNonBlank(getReplay(replayInfo, "Database Version"), dbHeader.get("Release"));
       summary.captureVersion = getCapture(replayInfo, "Database Version");
+      summary.replayPlatform = getReplay(databaseInfo, "Platform");
+      summary.capturePlatform = getCapture(databaseInfo, "Platform");
       summary.replayDb = formatDb(firstNonBlank(getReplay(databaseInfo, "Database Name"), getReplay(replayInfo, "Database Name")), summary.replayVersion);
       summary.captureDb = formatDb(firstNonBlank(getCapture(databaseInfo, "Database Name"), getCapture(replayInfo, "Database Name")), summary.captureVersion);
       summary.dbTime = mainPerformance.get("Database Time");
       summary.cpuTime = mainPerformance.get("CPU Time");
       summary.userIoTime = mainPerformance.get("User I/O Wait Time");
+      summary.captureCpu = cpuUsage.get("Capture");
+      summary.replayCpu = cpuUsage.get("Replay");
+      summary.captureInstance = instanceInfo(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Instances of the Capture Database")));
+      summary.replayInstance = instanceInfo(Html.tableRows(Html.tableAfterLabel(bundle.compareHtml, "Instances of the Replay Database")));
 
       DivergenceItem div = compareDivergence.get("Replay Divergence (compared to Capture)");
       if (div == null) {
@@ -286,17 +351,72 @@ public final class ReplaySummaryCli {
         summary.awrSql = parseAwrSql(bundle.awrHtml);
       }
 
-      buildNarrative(summary, replayStats);
+      CaptureInfo captureInfo = parseCaptureInfo(bundle.captureHtml);
+      buildNarrative(summary, replayStats, mainPerformance, captureInfo);
       return summary;
     }
 
-    private static void buildNarrative(Summary summary, Map<String, Pair> replayStats) {
+    private static void buildNarrative(Summary summary, Map<String, Pair> replayStats, Map<String, Metric> mainPerformance, CaptureInfo captureInfo) {
       Double dbChange = summary.dbTime == null ? null : summary.dbTime.changePct;
       Double cpuChange = summary.cpuTime == null ? null : summary.cpuTime.changePct;
       Double divergencePct = summary.divergencePct;
+      Pair userCalls = findMetric(replayStats, "user", "calls");
+      Pair finishedSessions = findMetric(replayStats, "finished", "sessions");
+      Metric compareUserCalls = mainPerformance.get("User Calls");
+      String userCallsCapture = firstNonBlank(compareUserCalls == null ? "" : compareUserCalls.captureTotal, userCalls == null ? "" : userCalls.capture);
+      String userCallsReplay = firstNonBlank(compareUserCalls == null ? "" : compareUserCalls.replayTotal, userCalls == null ? "" : userCalls.replay);
+      Double userCallsDiffPct = compareMagnitudePct(userCallsCapture, userCallsReplay);
+      Boolean userCallsSimilar = userCallsDiffPct == null ? null : Boolean.valueOf(Math.abs(userCallsDiffPct.doubleValue()) <= 10.0);
+      Double sessionsDiffPct = finishedSessions == null ? null : compareMagnitudePct(finishedSessions.capture, finishedSessions.replay);
+      Boolean sessionsStable = sessionsDiffPct == null ? null : Boolean.valueOf(sessionsDiffPct.doubleValue() >= -5.0);
+      Integer captureCores = coreCount(summary.captureCpu, summary.captureInstance);
+      Integer replayCores = coreCount(summary.replayCpu, summary.replayInstance);
+      boolean cpuMismatch = captureCores != null && replayCores != null && replayCores.intValue() < captureCores.intValue();
+      Double captureMemoryGb = parseMemoryInGb(summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory);
+      Double replayMemoryGb = parseMemoryInGb(summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory);
+      boolean memoryReduced = captureMemoryGb != null && replayMemoryGb != null && replayMemoryGb.doubleValue() < captureMemoryGb.doubleValue();
+      String divergenceAssessment = classifyDivergence(divergencePct);
+      CaptureValidity captureValidity = summarizeCaptureValidity(captureInfo);
+      summary.functionalAssessment = buildFunctionalAssessment(summary, captureInfo, captureValidity, divergenceAssessment);
+
+      boolean isUpgradeTest = !isBlank(summary.captureVersion) && !isBlank(summary.replayVersion) && !summary.captureVersion.equals(summary.replayVersion);
+      if (isUpgradeTest) {
+        summary.testObjectiveType = "Version upgrade";
+        summary.testObjectiveReason = "Capture ran on " + defaultText(summary.captureVersion) + " and replay ran on " + defaultText(summary.replayVersion) + ".";
+      } else if (cpuMismatch || memoryReduced) {
+        summary.testObjectiveType = "Hardware change";
+        summary.testObjectiveReason = "CPU or memory configuration differs between the capture and replay environments.";
+      } else if (!isBlank(summary.capturePlatform) && !isBlank(summary.replayPlatform) && !summary.capturePlatform.equals(summary.replayPlatform)) {
+        summary.testObjectiveType = "Hardware change";
+        summary.testObjectiveReason = "Platform differs between environments: " + summary.capturePlatform + " vs " + summary.replayPlatform + ".";
+      } else {
+        summary.testObjectiveType = "Unknown";
+        summary.testObjectiveReason = "No major version, parameter, or hardware change was identified from the available reports.";
+      }
+
+      List<String> validityIssues = new ArrayList<String>();
+      if (!"COMPLETED".equals(summary.replayStatus)) {
+        validityIssues.add("Replay status is " + summary.replayStatus + ", so the workload did not complete successfully.");
+      }
+      if (divergencePct != null && divergencePct.doubleValue() > 20.0) {
+        validityIssues.add("Replay divergence is " + fmt(divergencePct, 2) + "%, which is high enough to make the replay unreliable.");
+      }
+      if (userCallsSimilar != null && !userCallsSimilar.booleanValue()) {
+        validityIssues.add("User Calls differ materially between capture and replay (" + signedPct(userCallsDiffPct, 1) + ").");
+      }
+      if (sessionsStable != null && !sessionsStable.booleanValue()) {
+        validityIssues.add("Finished Replay Sessions dropped materially, indicating instability during replay.");
+      }
+      boolean isValid = validityIssues.isEmpty();
+      summary.testOutcomeValid = isValid ? "Yes" : "No";
+      summary.testOutcomeReason = isValid
+          ? "Replay completed and the core comparability checks do not show a major fidelity failure."
+          : join(" ", validityIssues);
 
       if (!"COMPLETED".equals(summary.replayStatus)) {
         summary.findings.add("Replay status is " + summary.replayStatus + "; validate replay logs before using the comparison for promotion decisions.");
+      } else {
+        summary.findings.add("Replay completed successfully.");
       }
       if (dbChange != null) {
         if (dbChange <= -10.0) {
@@ -315,15 +435,46 @@ public final class ReplaySummaryCli {
       if (divergencePct != null && divergencePct > 0) {
         summary.findings.add("Replay divergence is " + fmt(divergencePct, 2) + "% of calls (Oracle label: " + summary.divergenceLevel + ").");
       }
+      if (userCallsDiffPct != null) {
+        summary.findings.add(Boolean.TRUE.equals(userCallsSimilar)
+            ? "User Calls are similar between capture and replay (" + defaultText(userCallsCapture) + " -> " + defaultText(userCallsReplay) + ", " + signedPct(userCallsDiffPct, 1) + " difference)."
+            : "User Calls differ materially between capture and replay (" + defaultText(userCallsCapture) + " -> " + defaultText(userCallsReplay) + ", " + signedPct(userCallsDiffPct, 1) + " difference).");
+      }
+      if (finishedSessions != null) {
+        summary.findings.add(Boolean.FALSE.equals(sessionsStable)
+            ? "Finished Replay Sessions dropped from " + defaultText(finishedSessions.capture) + " to " + defaultText(finishedSessions.replay) + ", which suggests replay instability."
+            : "Finished Replay Sessions stayed broadly consistent (" + defaultText(finishedSessions.capture) + " -> " + defaultText(finishedSessions.replay) + ").");
+      }
+      if (captureCores != null && replayCores != null) {
+        if (replayCores.intValue() < captureCores.intValue()) {
+          summary.findings.add("CPU cores decreased from " + captureCores + " to " + replayCores + ", which can degrade performance.");
+        } else if (replayCores.intValue() > captureCores.intValue()) {
+          summary.findings.add("CPU cores increased from " + captureCores + " to " + replayCores + ", which can make the result look better than capture.");
+        } else {
+          summary.findings.add("CPU core count is the same in capture and replay (" + captureCores + ").");
+        }
+      }
+      if (summary.captureInstance != null || summary.replayInstance != null) {
+        String captureMemory = summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory;
+        String replayMemory = summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory;
+        summary.findings.add(memoryReduced
+            ? "Physical memory decreased from " + defaultText(captureMemory) + " to " + defaultText(replayMemory) + "."
+            : "Physical memory appears comparable (" + defaultText(captureMemory) + " -> " + defaultText(replayMemory) + ").");
+      }
 
       AddmFinding topAddm = summary.addm.isEmpty() ? null : summary.addm.get(0);
       if (topAddm != null) {
         summary.likelyCauses.add("The largest replay ADDM signal is " + topAddm.name + " at " + nullSafePct(topAddm.replayPct) + " of active sessions.");
       }
+      if (cpuMismatch) {
+        summary.likelyCauses.add("Replay environment is CPU-downgraded versus capture.");
+      }
+      if (memoryReduced) {
+        summary.likelyCauses.add("Replay environment has less physical memory than capture.");
+      }
       if (cpuChange != null && cpuChange > 0) {
         summary.likelyCauses.add("CPU consumption increased, which can happen when I/O waits fall away, SQL plans change, or parse/metadata work rises.");
       }
-      Pair userCalls = findMetric(replayStats, "user", "calls");
       if (userCalls != null) {
         summary.likelyCauses.add("Replay user calls were " + defaultText(userCalls.replay) + " versus capture user calls " + defaultText(userCalls.capture) + ".");
       }
@@ -335,33 +486,57 @@ public final class ReplaySummaryCli {
       summary.actions.add(summary.topReplaySql.isEmpty()
           ? "Top replay SQL by DB Time was unavailable; review the original Compare Period report for SQL detail."
           : "Review top replay SQL by DB Time: " + joinSqlIds(summary.topReplaySql, 3) + ".");
+      if (cpuMismatch) {
+        summary.actions.add("Re-run with CPU parity if the goal is an apples-to-apples validation.");
+      }
+      if (memoryReduced) {
+        summary.actions.add("Validate replay on equivalent memory capacity if this is not an intentional hardware-change test.");
+      }
       summary.actions.add("Validate replay comparability before promoting the tested change, especially if divergence, errors, or environment differences are present.");
 
-      boolean bad = (dbChange != null && dbChange >= 20.0)
-          || (divergencePct != null && divergencePct >= 10.0)
-          || "HIGH".equalsIgnoreCase(summary.divergenceLevel)
-          || !"COMPLETED".equals(summary.replayStatus);
-      boolean good = !bad
-          && dbChange != null
-          && dbChange <= -10.0
-          && (divergencePct == null || divergencePct < 3.0)
-          && "COMPLETED".equals(summary.replayStatus);
-      summary.verdict = good ? "good" : bad ? "bad" : "mixed";
-      summary.tone = good ? "positive" : bad ? "negative" : "caution";
-      int riskScore = 15;
+      String performanceStatus = "Mixed";
       if (!"COMPLETED".equals(summary.replayStatus)) {
-        riskScore += 35;
+        performanceStatus = "Not reliable";
+      } else if (dbChange != null && dbChange >= 10.0) {
+        performanceStatus = "Degraded";
+      } else if (dbChange != null && dbChange <= -10.0) {
+        performanceStatus = "Good";
       }
-      if (dbChange != null && dbChange > 10.0) {
-        riskScore += dbChange > 20.0 ? 35 : 20;
+      summary.replayVerdict = "degraded";
+      if ("Invalid".equals(summary.functionalAssessment.status)) {
+        summary.replayVerdict = "invalid";
+      } else if ("Good".equals(performanceStatus) && "Usable".equals(summary.functionalAssessment.status)) {
+        summary.replayVerdict = "good";
       }
-      if (divergencePct != null && divergencePct > 0) {
-        riskScore += divergencePct >= 5.0 ? 35 : 20;
+      if ("invalid".equals(summary.replayVerdict)) {
+        summary.verdictIcon = "FAIL";
+        summary.verdict = "bad";
+        summary.tone = "negative";
+        summary.bottomLineDetail = "Invalid replay result";
+      } else if ("good".equals(summary.replayVerdict)) {
+        summary.verdictIcon = "PASS";
+        summary.verdict = "good";
+        summary.tone = "positive";
+        summary.bottomLineDetail = cpuMismatch
+            ? "Good replay result (with comparability caveat: fewer replay CPU cores than capture)"
+            : "Good replay result";
+      } else {
+        summary.verdictIcon = "WARN";
+        summary.verdict = "mixed";
+        summary.tone = "caution";
+        summary.bottomLineDetail = "Degraded or mixed test result";
       }
-      summary.riskRating = riskScore >= 70 ? "High" : riskScore >= 40 ? "Moderate" : "Low";
+      summary.bottomLineBanner = "Bottom line: " + verdictLabelText(summary.bottomLineDetail);
+      summary.riskRating = riskRating(summary, dbChange, divergencePct, cpuMismatch, memoryReduced);
       summary.headline = summary.replayName + " finished with status " + summary.replayStatus + ". "
           + dbTimePhrase(dbChange) + " " + divergencePhrase(summary.divergenceLevel, divergencePct)
           + " Overall verdict: " + summary.verdict + ".";
+      if (cpuMismatch) {
+        summary.headline += " Replay has fewer CPU cores than capture (" + captureCores + " vs " + replayCores + "), which weakens comparability and can explain slower replay.";
+      }
+      if (memoryReduced) {
+        summary.headline += " Replay also has lower physical memory than capture.";
+      }
     }
   }
 
@@ -372,6 +547,7 @@ public final class ReplaySummaryCli {
       String userIoChart = metricChart("User I/O Wait Time", summary.userIoTime, "seconds");
       String topSqlRows = topSqlRows(summary.topReplaySql);
       String addmRows = addmRows(summary.addm);
+      String functionalSection = functionalSection(summary.functionalAssessment);
       String awrDeepDive = summary.includeAwrDeepDive ? awrDeepDive(summary) : "";
 
       String toneColor = "positive".equals(summary.tone) ? "#166534" : "negative".equals(summary.tone) ? "#991b1b" : "#92400e";
@@ -392,17 +568,21 @@ public final class ReplaySummaryCli {
           + "@media print{body{background:white}.hero,.card,.summary-block,.metric-chart{box-shadow:none}}\n"
           + "</style></head><body><main>\n"
           + "<section class=\"hero\"><div class=\"eyebrow\">Oracle Database Replay Executive Summary</div><h1>Replay Name: " + esc(summary.replayName) + "</h1>"
-          + "<p class=\"sub\">" + esc(summary.headline) + "</p><div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(summary.verdict.toUpperCase(Locale.US)) + "</div>"
+          + "<p class=\"sub\">" + esc(summary.headline) + "</p><div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(defaultText(summary.verdictIcon)) + " " + esc(defaultText(summary.bottomLineBanner)) + "</div>"
           + "<div class=\"cards\"><div class=\"card\"><div class=\"eyebrow\">Risk Rating</div><div class=\"value\">" + esc(summary.riskRating) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Replay Database</div><div class=\"value\">" + esc(defaultDash(summary.replayDb)) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Capture Database</div><div class=\"value\">" + esc(defaultDash(summary.captureDb)) + "</div></div></div></section>\n"
           + "<section><h2>Executive Summary</h2><div class=\"summary-block\">" + esc(executiveParagraph(summary)) + "</div></section>\n"
           + "<section><h2>Replay At-a-Glance</h2><div class=\"summary-block\"><ul class=\"clean\">"
+          + "<li><strong>Verdict:</strong> " + esc(defaultText(summary.replayVerdict)) + "</li>"
           + "<li><strong>Replay status:</strong> " + esc(summary.replayStatus) + "</li>"
+          + "<li><strong>Test outcome:</strong> " + esc(defaultText(summary.testOutcomeValid)) + " - " + esc(defaultText(summary.testOutcomeReason)) + "</li>"
+          + "<li><strong>Test objective:</strong> " + esc(defaultText(summary.testObjectiveType)) + " - " + esc(defaultText(summary.testObjectiveReason)) + "</li>"
           + "<li><strong>Database Time:</strong> " + esc(metricSummary(summary.dbTime)) + "</li>"
           + "<li><strong>CPU Time:</strong> " + esc(metricSummary(summary.cpuTime)) + "</li>"
           + "<li><strong>Divergence:</strong> " + esc(divergenceValue(summary.divergenceLevel, summary.divergencePct)) + "</li>"
           + "</ul></div></section>\n"
+          + functionalSection
           + "<section><h2>Performance Assessment</h2><div class=\"summary-block\"><div class=\"metric-charts\">" + dbTimeChart + cpuChart + userIoChart + "</div>"
           + "<h3>Key Findings</h3><ul class=\"clean\">" + listItems(summary.findings) + "</ul>"
           + "<h3>Likely Causes</h3><ul class=\"clean\">" + listItems(summary.likelyCauses) + "</ul>"
@@ -410,11 +590,17 @@ public final class ReplaySummaryCli {
           + "<section><h2>Replay SQL Drivers</h2><table><tr><th>SQL ID</th><th>Replay DB Time</th><th>SQL Text</th></tr>" + topSqlRows + "</table></section>\n"
           + "<section><h2>ADDM Comparison Signals</h2><table><tr><th>Finding</th><th>Capture Impact</th><th>Replay Impact</th><th>Replay Share</th></tr>" + addmRows + "</table></section>\n"
           + awrDeepDive
+          + "<section><h2>Final Verdict</h2><div class=\"summary-block\"><strong>" + esc(defaultText(summary.bottomLineDetail)) + "</strong>"
+          + "<div style=\"margin-top:10px;\">" + esc(defaultText(summary.testOutcomeReason)) + "</div></div></section>\n"
           + "<section><h2>Key Data Points</h2><table><tr><th>Metric</th><th>Value</th></tr>"
           + row("Replay status", summary.replayStatus)
           + row("Replay divergence", divergenceValue(summary.divergenceLevel, summary.divergencePct))
           + row("Database Time change", changeValue(summary.dbTime))
           + row("CPU Time change", changeValue(summary.cpuTime))
+          + row("Capture CPU topology", summary.captureCpu == null ? "" : summary.captureCpu.topology)
+          + row("Replay CPU topology", summary.replayCpu == null ? "" : summary.replayCpu.topology)
+          + row("Capture physical memory", summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory)
+          + row("Replay physical memory", summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory)
           + row("Generated", summary.generatedAt)
           + "</table></section>\n"
           + "<section><h2>Java Utility Notes</h2><div class=\"summary-block\">Generated by the standalone Java 8 utility. LLM narrative mode is not used; all text is deterministic and derived from supplied report tables.</div></section>\n"
@@ -451,6 +637,17 @@ public final class ReplaySummaryCli {
       List<String> cells = rows.get(i);
       if (cells.size() >= 2) {
         result.put(cells.get(0), new Pair(cells.get(1), cells.size() >= 3 ? cells.get(2) : ""));
+      }
+    }
+    return result;
+  }
+
+  private static Map<String, Pair> comparePairRows(List<List<String>> rows) {
+    Map<String, Pair> result = new LinkedHashMap<String, Pair>();
+    for (int i = 1; i < rows.size(); i++) {
+      List<String> cells = rows.get(i);
+      if (cells.size() >= 3) {
+        result.put(cells.get(0), new Pair(cells.get(2), cells.get(1)));
       }
     }
     return result;
@@ -500,6 +697,180 @@ public final class ReplaySummaryCli {
       }
     }
     return result;
+  }
+
+  private static Map<String, CpuUsage> cpuUsage(List<List<String>> rows) {
+    Map<String, CpuUsage> result = new LinkedHashMap<String, CpuUsage>();
+    for (int i = 1; i < rows.size(); i++) {
+      List<String> cells = rows.get(i);
+      if (cells.size() >= 2) {
+        CpuUsage usage = new CpuUsage();
+        usage.system = cells.get(0);
+        usage.topology = cells.size() > 1 ? cells.get(1) : "";
+        usage.hostUsage = cells.size() > 2 ? cells.get(2) : "";
+        usage.sessionsOnCpu = cells.size() > 3 ? cells.get(3) : "";
+        usage.runQueue = cells.size() > 4 ? cells.get(4) : "";
+        result.put(usage.system, usage);
+      }
+    }
+    return result;
+  }
+
+  private static InstanceInfo instanceInfo(List<List<String>> rows) {
+    if (rows.size() < 2) {
+      return null;
+    }
+    List<String> headers = rows.get(0);
+    List<String> values = rows.get(1);
+    InstanceInfo info = new InstanceInfo();
+    for (int i = 0; i < headers.size() && i < values.size(); i++) {
+      String header = headers.get(i).toLowerCase(Locale.US);
+      if (header.contains("cpu cores")) {
+        info.cpuCores = values.get(i);
+      } else if (header.contains("cpu sockets")) {
+        info.cpuSockets = values.get(i);
+      } else if (header.contains("physical memory")) {
+        info.physicalMemory = values.get(i);
+      }
+    }
+    return info;
+  }
+
+  private static CaptureInfo parseCaptureInfo(String html) {
+    CaptureInfo info = new CaptureInfo();
+    info.available = !isBlank(html);
+    if (!info.available) {
+      return info;
+    }
+    Map<String, String> captureDb = headerMap(Html.tableRows(Html.findTableBySummary(html, "capture database")));
+    info.status = firstNonBlank(captureDb.get("Status"), captureDb.get("Capture Status"));
+    List<List<String>> statsRows = Html.tableRows(Html.findTableBySummary(html, "captured workload statistics"));
+    for (int i = 1; i < statsRows.size(); i++) {
+      List<String> cells = statsRows.get(i);
+      if (cells.size() < 2) {
+        continue;
+      }
+      String name = cells.get(0).toLowerCase(Locale.US);
+      if (name.contains("user calls captured with errors")) {
+        info.userCallsWithErrors = toNumber(cells.get(1));
+      } else if (name.contains("user calls captured")) {
+        info.userCallsCaptured = toNumber(cells.get(1));
+      }
+    }
+    List<List<String>> filterRows = Html.tableRows(Html.findTableBySummary(html, "workload capture filters"));
+    info.filterCount = Math.max(0, filterRows.size() - 1);
+    List<List<String>> topSessions = Html.tableRows(Html.findTableBySummary(html, "Top Sessions Captured"));
+    for (int i = 1; i < topSessions.size(); i++) {
+      List<String> cells = topSessions.get(i);
+      if (cells.size() >= 6) {
+        info.topSessionCount++;
+        if (!isNonCoreWorkloadIdentity(cells.get(4), cells.get(5), "", "")) {
+          info.coreSessionCount++;
+        }
+      }
+    }
+    List<List<String>> unreplayableSessions = Html.tableRows(Html.findTableBySummary(html, "Top Sessions containing Unreplayable Calls"));
+    for (int i = 1; i < unreplayableSessions.size(); i++) {
+      List<String> cells = unreplayableSessions.get(i);
+      if (cells.size() >= 6) {
+        info.unreplayableCount++;
+        if (isNonCoreWorkloadIdentity(cells.get(4), cells.get(5), "", "")) {
+          info.nonCoreUnreplayableCount++;
+        }
+      }
+    }
+    List<List<String>> unreplayableServices = Html.tableRows(Html.findTableBySummary(html, "Top Service/Module containing Unreplayable Calls"));
+    for (int i = 1; i < unreplayableServices.size(); i++) {
+      List<String> cells = unreplayableServices.get(i);
+      if (cells.size() >= 2) {
+        info.unreplayableCount++;
+        if (isNonCoreWorkloadIdentity("", "", cells.get(0), cells.get(1))) {
+          info.nonCoreUnreplayableCount++;
+        }
+      }
+    }
+    info.backgroundSessionCount = Math.max(0, Html.tableRows(Html.findTableBySummary(html, "Top Sessions (Jobs and Background Activity)")).size() - 1);
+    return info;
+  }
+
+  private static CaptureValidity summarizeCaptureValidity(CaptureInfo capture) {
+    CaptureValidity validity = new CaptureValidity();
+    if (capture == null || !capture.available) {
+      validity.representative = "Unknown";
+      validity.reason = "Database Capture Report is missing.";
+      return validity;
+    }
+    String status = defaultText(capture.status).toUpperCase(Locale.US);
+    boolean representative = status.contains("COMPLETED")
+        && value(capture.userCallsCaptured) > 0.0
+        && capture.coreSessionCount > 0;
+    validity.representative = representative ? "Likely representative" : "Potentially unrepresentative";
+    validity.reason = representative
+        ? "Capture includes meaningful application sessions and completed cleanly."
+        : "Capture appears limited, background-heavy, or did not complete cleanly.";
+    if (!isBlank(status) && !"UNKNOWN".equals(status)) {
+      validity.evidence.add("Capture status: " + status + ".");
+    }
+    if (capture.userCallsCaptured != null) {
+      validity.evidence.add("User calls captured: " + fmt(capture.userCallsCaptured, 0) + ".");
+    }
+    if (capture.userCallsWithErrors != null) {
+      validity.evidence.add("Captured calls with errors: " + fmt(capture.userCallsWithErrors, 0) + ".");
+    }
+    if (capture.filterCount > 0) {
+      validity.evidence.add("Capture filters are present (" + capture.filterCount + ").");
+    }
+    return validity;
+  }
+
+  private static FunctionalAssessment buildFunctionalAssessment(Summary summary, CaptureInfo capture, CaptureValidity captureValidity, String divergenceLabel) {
+    FunctionalAssessment assessment = new FunctionalAssessment();
+    assessment.divergenceLabel = divergenceLabel;
+    assessment.captureValidity = captureValidity;
+    int totalUnreplayable = capture == null ? 0 : capture.unreplayableCount;
+    int nonCoreUnreplayable = capture == null ? 0 : capture.nonCoreUnreplayableCount;
+    boolean unreplayableMostlyNonCore = totalUnreplayable > 0 && ((double) nonCoreUnreplayable / (double) totalUnreplayable) >= 0.6;
+    assessment.errorSourceSummary = totalUnreplayable == 0
+        ? "No material unreplayable-call sources detected in capture report."
+        : unreplayableMostlyNonCore
+            ? "Unreplayable-call sources are mostly background/non-core workloads."
+            : "Unreplayable-call sources include potentially core workload identities.";
+    boolean localizedDivergence = "Good".equals(divergenceLabel)
+        || ("Moderate".equals(divergenceLabel) && (unreplayableMostlyNonCore || totalUnreplayable <= 2));
+    assessment.localizedDivergence = localizedDivergence ? "Yes" : "No";
+    assessment.status = !"COMPLETED".equals(summary.replayStatus) || "High".equals(divergenceLabel)
+        ? "Invalid"
+        : "Moderate".equals(divergenceLabel) && !localizedDivergence
+            ? "Degraded"
+            : "Usable";
+    if (capture == null || !capture.available) {
+      assessment.highlights.add("Capture report is not available, so workload representativeness cannot be verified.");
+    } else {
+      assessment.highlights.add("Capture validity: " + captureValidity.representative + ".");
+      if (unreplayableMostlyNonCore) {
+        assessment.highlights.add("Unreplayable activity appears concentrated in background or non-core workloads.");
+      } else if (totalUnreplayable > 0) {
+        assessment.highlights.add("Unreplayable activity includes potentially core workloads and needs review.");
+      }
+      if (capture.backgroundSessionCount > 0) {
+        assessment.highlights.add("Background activity is visible in the capture report.");
+      }
+    }
+    if (summary.divergencePct != null) {
+      assessment.highlights.add("Replay divergence is " + fmt(summary.divergencePct, 2) + "% (" + divergenceLabel + ").");
+    }
+    assessment.highlights.add(assessment.errorSourceSummary);
+    if ("Invalid".equals(assessment.status)) {
+      assessment.actions.add("Treat this replay as invalid and rerun after fixing capture/replay comparability issues.");
+    } else if ("Degraded".equals(assessment.status)) {
+      assessment.actions.add("Replay is usable with caveats; isolate failing schemas/users/jobs before final sign-off.");
+    } else {
+      assessment.actions.add("Functional fidelity is acceptable for decision-making, with noted caveats if any.");
+    }
+    if (capture == null || !capture.available) {
+      assessment.actions.add("Include Database Capture Report in future runs to validate captured workload quality.");
+    }
+    return assessment;
   }
 
   private static List<AddmFinding> parseAddm(String html) {
@@ -753,11 +1124,16 @@ public final class ReplaySummaryCli {
   }
 
   private static String executiveParagraph(Summary summary) {
-    String objective = "";
+    List<String> parts = new ArrayList<String>();
+    parts.add(summary.headline);
     if (!isBlank(summary.captureVersion) && !isBlank(summary.replayVersion) && !summary.captureVersion.equals(summary.replayVersion)) {
-      objective = " This is an upgrade validation from " + summary.captureVersion + " to " + summary.replayVersion + ".";
+      parts.add("This is an upgrade validation from " + summary.captureVersion + " to " + summary.replayVersion + ".");
     }
-    return summary.headline + objective + " The highest-priority review items are Database Time, replay divergence, ADDM comparison signals, and top replay SQL by DB Time.";
+    if (summary.functionalAssessment != null) {
+      parts.add("Functional comparability is " + summary.functionalAssessment.status.toLowerCase(Locale.US) + " based on measured divergence and capture/replay fidelity checks.");
+    }
+    parts.add("The highest-priority review items are Database Time, replay divergence, environment comparability, ADDM comparison signals, and top replay SQL by DB Time.");
+    return join(" ", parts);
   }
 
   private static String metricChart(String title, Metric metric, String unit) {
@@ -805,6 +1181,35 @@ public final class ReplaySummaryCli {
       out.append("<tr><td>").append(esc(row.name)).append("</td><td>").append(esc(numberOrDash(row.captureImpactSec))).append("</td><td>")
           .append(esc(numberOrDash(row.replayImpactSec))).append("</td><td>").append(esc(nullSafePct(row.replayPct))).append("</td></tr>");
     }
+    return out.toString();
+  }
+
+  private static String functionalSection(FunctionalAssessment assessment) {
+    if (assessment == null) {
+      return "<section><h2>Functional Assessment</h2><div class=\"summary-block\">Insufficient data</div></section>\n";
+    }
+    StringBuilder out = new StringBuilder();
+    out.append("<section><h2>Functional Assessment</h2><div class=\"summary-block\">");
+    out.append("<p style=\"margin-top:0;\">Status is ").append(esc(defaultText(assessment.status))).append(". ");
+    out.append("Divergence is ").append(esc(defaultText(assessment.divergenceLabel))).append(". ");
+    out.append(esc(defaultText(assessment.errorSourceSummary))).append(" ");
+    out.append("Capture validity: ").append(esc(assessment.captureValidity == null ? "Unknown" : assessment.captureValidity.representative)).append(".</p>");
+    out.append("<ul class=\"clean\">");
+    out.append("<li><strong>Assessment status:</strong> ").append(esc(defaultText(assessment.status))).append("</li>");
+    out.append("<li><strong>Divergence:</strong> ").append(esc(defaultText(assessment.divergenceLabel))).append("</li>");
+    out.append("<li><strong>Localized divergence:</strong> ").append(esc(defaultText(assessment.localizedDivergence))).append("</li>");
+    out.append("<li><strong>Error source profile:</strong> ").append(esc(defaultText(assessment.errorSourceSummary))).append("</li>");
+    out.append("<li><strong>Capture validity:</strong> ").append(esc(assessment.captureValidity == null ? "Unknown" : assessment.captureValidity.representative));
+    if (assessment.captureValidity != null && !isBlank(assessment.captureValidity.reason)) {
+      out.append(" - ").append(esc(assessment.captureValidity.reason));
+    }
+    out.append("</li></ul>");
+    out.append("<h3>Highlights</h3><ul class=\"clean\">").append(listItems(assessment.highlights)).append("</ul>");
+    if (assessment.captureValidity != null && !assessment.captureValidity.evidence.isEmpty()) {
+      out.append("<h3>Capture Evidence</h3><ul class=\"clean\">").append(listItems(assessment.captureValidity.evidence)).append("</ul>");
+    }
+    out.append("<h3>Actions</h3><ul class=\"clean\">").append(listItems(assessment.actions)).append("</ul>");
+    out.append("</div></section>\n");
     return out.toString();
   }
 
@@ -944,6 +1349,119 @@ public final class ReplaySummaryCli {
       return "COMPLETED";
     }
     return value;
+  }
+
+  private static Double compareMagnitudePct(String left, String right) {
+    Double leftNum = toNumber(left);
+    Double rightNum = toNumber(right);
+    if (leftNum == null || rightNum == null || leftNum.doubleValue() == 0.0) {
+      return null;
+    }
+    return Double.valueOf(((rightNum.doubleValue() - leftNum.doubleValue()) / leftNum.doubleValue()) * 100.0);
+  }
+
+  private static Integer coreCount(CpuUsage cpuUsage, InstanceInfo instanceInfo) {
+    if (cpuUsage != null) {
+      Integer parsed = parseCoreCount(cpuUsage.topology);
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+    if (instanceInfo != null) {
+      Double cores = toNumber(instanceInfo.cpuCores);
+      if (cores != null) {
+        return Integer.valueOf((int) Math.round(cores.doubleValue()));
+      }
+    }
+    return null;
+  }
+
+  private static Integer parseCoreCount(String topology) {
+    Matcher matcher = Pattern.compile("(\\d+)\\s*/\\s*(\\d+)\\s*/\\s*(\\d+)").matcher(topology == null ? "" : topology);
+    return matcher.find() ? Integer.valueOf(matcher.group(2)) : null;
+  }
+
+  private static Double parseMemoryInGb(String value) {
+    if (isBlank(value)) {
+      return null;
+    }
+    Double number = toNumber(value);
+    if (number == null) {
+      return null;
+    }
+    String text = value.toUpperCase(Locale.US);
+    if (text.contains("TB")) {
+      return Double.valueOf(number.doubleValue() * 1024.0);
+    }
+    if (text.contains("GB") || Pattern.compile("\\bG\\b").matcher(text).find()) {
+      return number;
+    }
+    if (text.contains("MB") || Pattern.compile("\\bM\\b").matcher(text).find()) {
+      return Double.valueOf(number.doubleValue() / 1024.0);
+    }
+    if (text.contains("KB") || Pattern.compile("\\bK\\b").matcher(text).find()) {
+      return Double.valueOf(number.doubleValue() / (1024.0 * 1024.0));
+    }
+    if (number.doubleValue() > 1024.0 * 1024.0 * 32.0) {
+      return Double.valueOf(number.doubleValue() / (1024.0 * 1024.0 * 1024.0));
+    }
+    if (number.doubleValue() > 1024.0 * 32.0) {
+      return Double.valueOf(number.doubleValue() / (1024.0 * 1024.0));
+    }
+    return number;
+  }
+
+  private static String classifyDivergence(Double pct) {
+    if (pct == null) {
+      return "Insufficient data";
+    }
+    if (pct.doubleValue() > 20.0) {
+      return "High";
+    }
+    if (pct.doubleValue() >= 5.0) {
+      return "Moderate";
+    }
+    return "Good";
+  }
+
+  private static String verdictLabelText(String text) {
+    String value = defaultText(text);
+    if (Pattern.compile("\\b(Unsuccessful|Invalid|Bad|Failed|Degraded)\\b", Pattern.CASE_INSENSITIVE).matcher(value).find()) {
+      return "bad";
+    }
+    if (Pattern.compile("\\b(Successful|Good|Pass)\\b", Pattern.CASE_INSENSITIVE).matcher(value).find()) {
+      return "good";
+    }
+    return "mixed";
+  }
+
+  private static String riskRating(Summary summary, Double dbChange, Double divergencePct, boolean cpuMismatch, boolean memoryReduced) {
+    if (!"COMPLETED".equals(summary.replayStatus) || (divergencePct != null && divergencePct.doubleValue() > 20.0)) {
+      return "High";
+    }
+    if ((dbChange != null && dbChange.doubleValue() >= 10.0) || cpuMismatch || memoryReduced) {
+      return "Moderate";
+    }
+    if (divergencePct != null && divergencePct.doubleValue() >= 5.0) {
+      return "Moderate";
+    }
+    return "Low";
+  }
+
+  private static boolean isNonCoreWorkloadIdentity(String user, String program, String service, String module) {
+    String text = (defaultText(user) + " " + defaultText(program) + " " + defaultText(service) + " " + defaultText(module)).toLowerCase(Locale.US);
+    return text.contains("oracle")
+        || text.contains("sys")
+        || text.contains("system")
+        || text.contains("background")
+        || text.contains("mmon")
+        || text.contains("dbw")
+        || text.contains("lgwr")
+        || text.contains("smon")
+        || text.contains("pmon")
+        || text.contains("ckpt")
+        || text.contains("jq")
+        || text.contains("scheduler");
   }
 
   private static String normalizeSqlId(String value) {
