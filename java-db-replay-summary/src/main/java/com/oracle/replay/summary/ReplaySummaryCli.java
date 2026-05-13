@@ -191,6 +191,7 @@ public final class ReplaySummaryCli {
     String verdictIcon;
     String bottomLineBanner;
     String bottomLineDetail;
+    String comparabilityNote;
     String tone;
     String riskRating;
     String headline;
@@ -502,40 +503,57 @@ public final class ReplaySummaryCli {
       } else if (dbChange != null && dbChange <= -10.0) {
         performanceStatus = "Good";
       }
-      summary.replayVerdict = "degraded";
-      if ("Invalid".equals(summary.functionalAssessment.status)) {
-        summary.replayVerdict = "invalid";
-      } else if ("Good".equals(performanceStatus) && "Usable".equals(summary.functionalAssessment.status)) {
-        summary.replayVerdict = "good";
+      if (cpuMismatch || memoryReduced) {
+        List<String> caveats = new ArrayList<String>();
+        if (cpuMismatch) {
+          caveats.add("replay CPU cores decreased from " + captureCores + " to " + replayCores);
+        }
+        if (memoryReduced) {
+          String captureMemory = summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory;
+          String replayMemory = summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory;
+          caveats.add("replay physical memory decreased from " + defaultText(captureMemory) + " to " + defaultText(replayMemory));
+        }
+        summary.comparabilityNote = "Not apples-to-apples: " + join("; ", caveats) + ".";
       }
-      if ("invalid".equals(summary.replayVerdict)) {
-        summary.verdictIcon = "FAIL";
-        summary.verdict = "bad";
+
+      if ("Invalid".equals(summary.functionalAssessment.status) || "Not reliable".equals(performanceStatus)) {
+        summary.replayVerdict = "INVALID";
+      } else if ("Degraded".equals(performanceStatus)) {
+        summary.replayVerdict = "DEGRADED";
+      } else if ("Good".equals(performanceStatus) && "Usable".equals(summary.functionalAssessment.status) && !cpuMismatch && !memoryReduced) {
+        summary.replayVerdict = "GOOD";
+      } else {
+        summary.replayVerdict = "INCONCLUSIVE";
+      }
+
+      if ("INVALID".equals(summary.replayVerdict)) {
+        summary.verdict = "invalid";
         summary.tone = "negative";
         summary.bottomLineDetail = "Invalid replay result";
-      } else if ("good".equals(summary.replayVerdict)) {
-        summary.verdictIcon = "PASS";
+        summary.bottomLineBanner = "Replay fidelity is not reliable enough for decision-making.";
+      } else if ("GOOD".equals(summary.replayVerdict)) {
         summary.verdict = "good";
         summary.tone = "positive";
-        summary.bottomLineDetail = cpuMismatch
-            ? "Good replay result (with comparability caveat: fewer replay CPU cores than capture)"
-            : "Good replay result";
-      } else {
-        summary.verdictIcon = "WARN";
-        summary.verdict = "mixed";
+        summary.bottomLineDetail = "Good replay result";
+        summary.bottomLineBanner = "Performance improved or remained stable and replay fidelity is usable.";
+      } else if ("DEGRADED".equals(summary.replayVerdict)) {
+        summary.verdict = "degraded";
         summary.tone = "caution";
-        summary.bottomLineDetail = "Degraded or mixed test result";
+        summary.bottomLineDetail = "Degraded replay result";
+        summary.bottomLineBanner = "Performance regressed materially, but replay fidelity is usable.";
+      } else {
+        summary.verdict = "inconclusive";
+        summary.tone = "caution";
+        summary.bottomLineDetail = "Inconclusive replay result";
+        summary.bottomLineBanner = "The replay has mixed or incomplete signals; review the caveats before using it for a promotion decision.";
       }
-      summary.bottomLineBanner = "Bottom line: " + verdictLabelText(summary.bottomLineDetail);
+      summary.verdictIcon = summary.replayVerdict;
       summary.riskRating = riskRating(summary, dbChange, divergencePct, cpuMismatch, memoryReduced);
       summary.headline = summary.replayName + " finished with status " + summary.replayStatus + ". "
           + dbTimePhrase(dbChange) + " " + divergencePhrase(summary.divergenceLevel, divergencePct)
-          + " Overall verdict: " + summary.verdict + ".";
-      if (cpuMismatch) {
-        summary.headline += " Replay has fewer CPU cores than capture (" + captureCores + " vs " + replayCores + "), which weakens comparability and can explain slower replay.";
-      }
-      if (memoryReduced) {
-        summary.headline += " Replay also has lower physical memory than capture.";
+          + " " + summary.bottomLineBanner;
+      if (!isBlank(summary.comparabilityNote)) {
+        summary.headline += " " + summary.comparabilityNote;
       }
     }
   }
@@ -546,9 +564,16 @@ public final class ReplaySummaryCli {
       String cpuChart = metricChart("CPU Time", summary.cpuTime, "seconds");
       String userIoChart = metricChart("User I/O Wait Time", summary.userIoTime, "seconds");
       String topSqlRows = topSqlRows(summary.topReplaySql);
-      String addmRows = addmRows(summary.addm);
+      String addmBottlenecks = addmBottleneckItems(summary.addm);
       String functionalSection = functionalSection(summary.functionalAssessment);
       String awrDeepDive = summary.includeAwrDeepDive ? awrDeepDive(summary) : "";
+      String finalVerdictBody = defaultText(summary.bottomLineBanner);
+      if (!isBlank(summary.comparabilityNote)) {
+        finalVerdictBody += " " + summary.comparabilityNote;
+      }
+      if (!isBlank(summary.testOutcomeReason)) {
+        finalVerdictBody += " " + summary.testOutcomeReason;
+      }
 
       String toneColor = "positive".equals(summary.tone) ? "#166534" : "negative".equals(summary.tone) ? "#991b1b" : "#92400e";
       String toneBg = "positive".equals(summary.tone) ? "rgba(22,101,52,.12)" : "negative".equals(summary.tone) ? "rgba(153,27,27,.12)" : "rgba(146,64,14,.12)";
@@ -564,17 +589,18 @@ public final class ReplaySummaryCli {
           + ".card,.summary-block{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:18px}.value{margin-top:8px;font-size:1.1rem;font-weight:800}section{margin-top:28px}"
           + ".verdict{display:inline-flex;align-items:center;border-radius:999px;padding:8px 12px;font-weight:800;margin-top:16px}.clean{margin:0;padding-left:20px}.clean li{margin:9px 0}"
           + "table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f8fafc}"
+          + "details.collapsible-wrap{margin-top:14px}details.collapsible-wrap>summary{list-style:none;border:1px solid var(--line);background:#f8fafc;color:var(--ink);border-radius:12px;padding:6px 10px;font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}details.collapsible-wrap>summary::-webkit-details-marker{display:none}details.collapsible-wrap>summary:before{content:\"+\";width:18px;text-align:center}details.collapsible-wrap[open]>summary:before{content:\"-\"}.collapsible-details{margin-top:10px}"
           + ".metric-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.metric-chart{border:1px solid var(--line);border-radius:14px;background:#fcfdfd;padding:12px}.metric-row{margin:8px 0}.metric-meta{display:flex;justify-content:space-between;gap:8px;font-size:.9rem}.bar-track{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden}.bar-fill{height:100%;border-radius:999px}.capture{background:#2563eb}.replay{background:#dc2626}"
-          + "@media print{body{background:white}.hero,.card,.summary-block,.metric-chart{box-shadow:none}}\n"
+          + "@media print{body{background:white}.hero,.card,.summary-block,.metric-chart{box-shadow:none}.collapsible-details{display:block!important}}\n"
           + "</style></head><body><main>\n"
           + "<section class=\"hero\"><div class=\"eyebrow\">Oracle Database Replay Executive Summary</div><h1>Replay Name: " + esc(summary.replayName) + "</h1>"
-          + "<p class=\"sub\">" + esc(summary.headline) + "</p><div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(defaultText(summary.verdictIcon)) + " " + esc(defaultText(summary.bottomLineBanner)) + "</div>"
+          + "<p class=\"sub\">" + esc(summary.headline) + "</p><div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(defaultText(summary.verdictIcon)) + "</div>"
           + "<div class=\"cards\"><div class=\"card\"><div class=\"eyebrow\">Risk Rating</div><div class=\"value\">" + esc(summary.riskRating) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Replay Database</div><div class=\"value\">" + esc(defaultDash(summary.replayDb)) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Capture Database</div><div class=\"value\">" + esc(defaultDash(summary.captureDb)) + "</div></div></div></section>\n"
           + "<section><h2>Executive Summary</h2><div class=\"summary-block\">" + esc(executiveParagraph(summary)) + "</div></section>\n"
           + "<section><h2>Replay At-a-Glance</h2><div class=\"summary-block\"><ul class=\"clean\">"
-          + "<li><strong>Verdict:</strong> " + esc(defaultText(summary.replayVerdict)) + "</li>"
+          + "<li><strong>Outcome:</strong> " + esc(defaultText(summary.replayVerdict)) + "</li>"
           + "<li><strong>Replay status:</strong> " + esc(summary.replayStatus) + "</li>"
           + "<li><strong>Test outcome:</strong> " + esc(defaultText(summary.testOutcomeValid)) + " - " + esc(defaultText(summary.testOutcomeReason)) + "</li>"
           + "<li><strong>Test objective:</strong> " + esc(defaultText(summary.testObjectiveType)) + " - " + esc(defaultText(summary.testObjectiveReason)) + "</li>"
@@ -584,14 +610,21 @@ public final class ReplaySummaryCli {
           + "</ul></div></section>\n"
           + functionalSection
           + "<section><h2>Performance Assessment</h2><div class=\"summary-block\"><div class=\"metric-charts\">" + dbTimeChart + cpuChart + userIoChart + "</div>"
-          + "<h3>Key Findings</h3><ul class=\"clean\">" + listItems(summary.findings) + "</ul>"
-          + "<h3>Likely Causes</h3><ul class=\"clean\">" + listItems(summary.likelyCauses) + "</ul>"
-          + "<h3>Recommended Actions</h3><ul class=\"clean\">" + listItems(summary.actions) + "</ul></div></section>\n"
+          + "<ul class=\"clean\">"
+          + "<li><strong>Performance outcome:</strong> " + esc(defaultText(summary.replayVerdict)) + "</li>"
+          + "<li><strong>Database Time:</strong> " + esc(metricSummary(summary.dbTime)) + "</li>"
+          + "<li><strong>CPU Time:</strong> " + esc(metricSummary(summary.cpuTime)) + "</li>"
+          + "</ul>"
+          + "<details class=\"collapsible-wrap\"><summary>Show details</summary><div class=\"collapsible-details\">"
+          + "<p style=\"margin:14px 0 8px;\"><strong>Top Bottlenecks (ADDM Comparison Insights)</strong></p><ul class=\"clean\">" + addmBottlenecks + "</ul>"
+          + "<p style=\"margin:14px 0 8px;\"><strong>Key Findings</strong></p><ul class=\"clean\">" + listItems(summary.findings) + "</ul>"
+          + "<p style=\"margin:14px 0 8px;\"><strong>Likely Causes</strong></p><ul class=\"clean\">" + listItems(summary.likelyCauses) + "</ul>"
+          + "<p style=\"margin:14px 0 8px;\"><strong>Actions</strong></p><ul class=\"clean\">" + listItems(summary.actions) + "</ul>"
+          + "</div></details></div></section>\n"
           + "<section><h2>Replay SQL Drivers</h2><table><tr><th>SQL ID</th><th>Replay DB Time</th><th>SQL Text</th></tr>" + topSqlRows + "</table></section>\n"
-          + "<section><h2>ADDM Comparison Signals</h2><table><tr><th>Finding</th><th>Capture Impact</th><th>Replay Impact</th><th>Replay Share</th></tr>" + addmRows + "</table></section>\n"
           + awrDeepDive
           + "<section><h2>Final Verdict</h2><div class=\"summary-block\"><strong>" + esc(defaultText(summary.bottomLineDetail)) + "</strong>"
-          + "<div style=\"margin-top:10px;\">" + esc(defaultText(summary.testOutcomeReason)) + "</div></div></section>\n"
+          + "<div style=\"margin-top:10px;\">" + esc(finalVerdictBody) + "</div></div></section>\n"
           + "<section><h2>Key Data Points</h2><table><tr><th>Metric</th><th>Value</th></tr>"
           + row("Replay status", summary.replayStatus)
           + row("Replay divergence", divergenceValue(summary.divergenceLevel, summary.divergencePct))
@@ -1172,14 +1205,24 @@ public final class ReplaySummaryCli {
     return out.toString();
   }
 
-  private static String addmRows(List<AddmFinding> rows) {
+  private static String addmBottleneckItems(List<AddmFinding> rows) {
     if (rows.isEmpty()) {
-      return "<tr><td colspan=\"4\">ADDM comparison data was not available.</td></tr>";
+      return "<li>ADDM comparison data was not available.</li>";
     }
     StringBuilder out = new StringBuilder();
-    for (AddmFinding row : first(rows, 8)) {
-      out.append("<tr><td>").append(esc(row.name)).append("</td><td>").append(esc(numberOrDash(row.captureImpactSec))).append("</td><td>")
-          .append(esc(numberOrDash(row.replayImpactSec))).append("</td><td>").append(esc(nullSafePct(row.replayPct))).append("</td></tr>");
+    int count = 0;
+    for (AddmFinding row : rows) {
+      if (row.replayPct == null || row.replayPct.doubleValue() <= 0.0) {
+        continue;
+      }
+      out.append("<li>").append(esc(row.name)).append(" (").append(esc(nullSafePct(row.replayPct))).append(" replay impact share)</li>");
+      count++;
+      if (count >= 3) {
+        break;
+      }
+    }
+    if (count == 0) {
+      return "<li>No replay ADDM bottleneck with measurable replay impact was available.</li>";
     }
     return out.toString();
   }
@@ -1204,11 +1247,13 @@ public final class ReplaySummaryCli {
       out.append(" - ").append(esc(assessment.captureValidity.reason));
     }
     out.append("</li></ul>");
-    out.append("<h3>Highlights</h3><ul class=\"clean\">").append(listItems(assessment.highlights)).append("</ul>");
+    out.append("<details class=\"collapsible-wrap\"><summary>Show details</summary><div class=\"collapsible-details\">");
+    out.append("<p style=\"margin:14px 0 8px;\"><strong>Highlights</strong></p><ul class=\"clean\">").append(listItems(assessment.highlights)).append("</ul>");
     if (assessment.captureValidity != null && !assessment.captureValidity.evidence.isEmpty()) {
-      out.append("<h3>Capture Evidence</h3><ul class=\"clean\">").append(listItems(assessment.captureValidity.evidence)).append("</ul>");
+      out.append("<p style=\"margin:14px 0 8px;\"><strong>Capture Evidence</strong></p><ul class=\"clean\">").append(listItems(assessment.captureValidity.evidence)).append("</ul>");
     }
-    out.append("<h3>Actions</h3><ul class=\"clean\">").append(listItems(assessment.actions)).append("</ul>");
+    out.append("<p style=\"margin:14px 0 8px;\"><strong>Actions</strong></p><ul class=\"clean\">").append(listItems(assessment.actions)).append("</ul>");
+    out.append("</div></details>");
     out.append("</div></section>\n");
     return out.toString();
   }
@@ -1422,17 +1467,6 @@ public final class ReplaySummaryCli {
       return "Moderate";
     }
     return "Good";
-  }
-
-  private static String verdictLabelText(String text) {
-    String value = defaultText(text);
-    if (Pattern.compile("\\b(Unsuccessful|Invalid|Bad|Failed|Degraded)\\b", Pattern.CASE_INSENSITIVE).matcher(value).find()) {
-      return "bad";
-    }
-    if (Pattern.compile("\\b(Successful|Good|Pass)\\b", Pattern.CASE_INSENSITIVE).matcher(value).find()) {
-      return "good";
-    }
-    return "mixed";
   }
 
   private static String riskRating(Summary summary, Double dbChange, Double divergencePct, boolean cpuMismatch, boolean memoryReduced) {
