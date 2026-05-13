@@ -594,11 +594,11 @@ public final class ReplaySummaryCli {
           + "@media print{body{background:white}.hero,.card,.summary-block,.metric-chart{box-shadow:none}.collapsible-details{display:block!important}}\n"
           + "</style></head><body><main>\n"
           + "<section class=\"hero\"><div class=\"eyebrow\">Oracle Database Replay Executive Summary</div><h1>Replay Name: " + esc(summary.replayName) + "</h1>"
-          + "<p class=\"sub\">" + esc(summary.headline) + "</p><div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(defaultText(summary.verdictIcon)) + "</div>"
+          + "<div class=\"verdict\" style=\"color:" + toneColor + ";background:" + toneBg + "\">" + esc(defaultText(summary.verdictIcon)) + "</div>"
           + "<div class=\"cards\"><div class=\"card\"><div class=\"eyebrow\">Risk Rating</div><div class=\"value\">" + esc(summary.riskRating) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Replay Database</div><div class=\"value\">" + esc(defaultDash(summary.replayDb)) + "</div></div>"
           + "<div class=\"card\"><div class=\"eyebrow\">Capture Database</div><div class=\"value\">" + esc(defaultDash(summary.captureDb)) + "</div></div></div></section>\n"
-          + "<section><h2>Executive Summary</h2><div class=\"summary-block\">" + esc(executiveParagraph(summary)) + "</div></section>\n"
+          + "<section><h2>Executive Summary</h2><div class=\"summary-block\">" + executiveSummaryHtml(summary) + "</div></section>\n"
           + "<section><h2>Replay At-a-Glance</h2><div class=\"summary-block\"><ul class=\"clean\">"
           + "<li><strong>Outcome:</strong> " + esc(defaultText(summary.replayVerdict)) + "</li>"
           + "<li><strong>Replay status:</strong> " + esc(summary.replayStatus) + "</li>"
@@ -1167,6 +1167,94 @@ public final class ReplaySummaryCli {
     }
     parts.add("The highest-priority review items are Database Time, replay divergence, environment comparability, ADDM comparison signals, and top replay SQL by DB Time.");
     return join(" ", parts);
+  }
+
+  private static String executiveSummaryHtml(Summary summary) {
+    StringBuilder out = new StringBuilder();
+    out.append("<p style=\"margin:0;\">")
+        .append("Replay ")
+        .append(strong(summary.replayName))
+        .append(" finished with status ")
+        .append(strong(summary.replayStatus))
+        .append(". ")
+        .append(dbTimePhraseHtml(summary.dbTime))
+        .append(" ");
+    if (summary.cpuTime != null && summary.cpuTime.changePct != null) {
+      out.append("CPU Time changed by ")
+          .append(strong(signedPct(summary.cpuTime.changePct, 1)))
+          .append(". ");
+    }
+    out.append(divergencePhraseHtml(summary.divergenceLevel, summary.divergencePct))
+        .append(" Outcome: ")
+        .append(strong(summary.replayVerdict))
+        .append(". ")
+        .append(esc(defaultText(summary.bottomLineBanner)));
+    String comparability = comparabilityHtml(summary);
+    if (!isBlank(comparability)) {
+      out.append(" ").append(comparability);
+    }
+    if (!isBlank(summary.captureVersion) && !isBlank(summary.replayVersion) && !summary.captureVersion.equals(summary.replayVersion)) {
+      out.append(" This is an upgrade validation from ")
+          .append(strong(summary.captureVersion))
+          .append(" to ")
+          .append(strong(summary.replayVersion))
+          .append(".");
+    }
+    if (summary.functionalAssessment != null) {
+      out.append(" Functional comparability is ")
+          .append(strong(summary.functionalAssessment.status.toLowerCase(Locale.US)))
+          .append(" based on measured divergence and capture/replay fidelity checks.");
+    }
+    out.append(" The highest-priority review items are Database Time, replay divergence, environment comparability, ADDM comparison signals, and top replay SQL by DB Time.");
+    out.append("</p>");
+    return out.toString();
+  }
+
+  private static String dbTimePhraseHtml(Metric dbTime) {
+    if (dbTime == null || dbTime.changePct == null) {
+      return "Replay DB time comparison is unavailable.";
+    }
+    double change = dbTime.changePct.doubleValue();
+    if (change < 0.0) {
+      return "Replay DB time improved by " + strong(fmt(Math.abs(change), 1) + "%") + " versus capture.";
+    }
+    if (change > 0.0) {
+      return "Replay DB time regressed by " + strong(fmt(change, 1) + "%") + " versus capture.";
+    }
+    return "Replay DB time is unchanged versus capture.";
+  }
+
+  private static String divergencePhraseHtml(String level, Double pct) {
+    if (pct == null) {
+      return "Divergence is unavailable (Oracle label: " + esc(defaultText(level)) + ").";
+    }
+    return "Divergence is " + strong(fmt(pct, 2) + "%") + " of calls (Oracle label: " + strong(defaultText(level)) + ").";
+  }
+
+  private static String comparabilityHtml(Summary summary) {
+    Integer captureCores = coreCount(summary.captureCpu, summary.captureInstance);
+    Integer replayCores = coreCount(summary.replayCpu, summary.replayInstance);
+    Double captureMemoryGb = parseMemoryInGb(summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory);
+    Double replayMemoryGb = parseMemoryInGb(summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory);
+    boolean cpuMismatch = captureCores != null && replayCores != null && replayCores.intValue() < captureCores.intValue();
+    boolean memoryReduced = captureMemoryGb != null && replayMemoryGb != null && replayMemoryGb.doubleValue() < captureMemoryGb.doubleValue();
+    if (!cpuMismatch && !memoryReduced) {
+      return "";
+    }
+    List<String> caveats = new ArrayList<String>();
+    if (cpuMismatch) {
+      caveats.add("replay CPU cores decreased from " + strong(String.valueOf(captureCores)) + " to " + strong(String.valueOf(replayCores)));
+    }
+    if (memoryReduced) {
+      String captureMemory = summary.captureInstance == null ? "" : summary.captureInstance.physicalMemory;
+      String replayMemory = summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory;
+      caveats.add("replay physical memory decreased from " + strong(defaultText(captureMemory)) + " to " + strong(defaultText(replayMemory)));
+    }
+    return "Not apples-to-apples: " + join("; ", caveats) + ".";
+  }
+
+  private static String strong(String text) {
+    return "<strong>" + esc(defaultText(text)) + "</strong>";
   }
 
   private static String metricChart(String title, Metric metric, String unit) {
