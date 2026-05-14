@@ -66,4 +66,5 @@ OPENAI_API_KEY=... java -cp java-db-replay-summary/build/classes \
 - The parser uses only data present in the supplied Oracle HTML reports.
 - Missing optional reports are tolerated where possible; missing DB Replay or Compare Period reports are errors.
 - LLM narrative rewrite is optional. Without `--llm-narrative`, the utility runs fully offline with deterministic text.
+- LLM HTTP calls auto-detect `https_proxy`, `HTTPS_PROXY`, `all_proxy`, or `ALL_PROXY` when Java proxy system properties are not already supplied.
 - If `--llm-narrative` is enabled but the API key or network call is unavailable, the utility falls back to deterministic text and records the warning in the generated report.

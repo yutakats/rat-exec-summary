@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -237,6 +239,9 @@ public final class ReplaySummaryCli {
     String llmNarrativeText;
     String llmNarrativeModel;
     String llmNarrativeWarning;
+    Integer llmInputTokens;
+    Integer llmOutputTokens;
+    Integer llmTotalTokens;
     String capturePlatform;
     String replayPlatform;
     CpuUsage captureCpu;
@@ -618,6 +623,9 @@ public final class ReplaySummaryCli {
           return;
         }
         summary.llmNarrativeText = text.trim();
+        summary.llmInputTokens = extractJsonIntegerByKey(response, "input_tokens", 0);
+        summary.llmOutputTokens = extractJsonIntegerByKey(response, "output_tokens", 0);
+        summary.llmTotalTokens = extractJsonIntegerByKey(response, "total_tokens", 0);
         summary.llmNarrativeUsed = true;
       } catch (Exception error) {
         summary.llmNarrativeWarning = "LLM narrative failed (" + error.getMessage() + "); deterministic narrative was used.";
@@ -656,7 +664,8 @@ public final class ReplaySummaryCli {
 
     private static String postResponsesApi(String endpoint, String apiKey, String model, String prompt, int timeoutSeconds) throws IOException {
       URL url = new URL(endpoint);
-      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      Proxy proxy = proxyFromEnvironment(url);
+      HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
       connection.setRequestMethod("POST");
       connection.setConnectTimeout(timeoutSeconds * 1000);
       connection.setReadTimeout(timeoutSeconds * 1000);
@@ -681,6 +690,35 @@ public final class ReplaySummaryCli {
       return response;
     }
 
+    private static Proxy proxyFromEnvironment(URL target) {
+      String configuredHost = System.getProperty("https.proxyHost");
+      if ("https".equalsIgnoreCase(target.getProtocol()) && !isBlank(configuredHost)) {
+        return null;
+      }
+      String rawProxy = firstNonBlank(
+          System.getenv("https_proxy"),
+          System.getenv("HTTPS_PROXY"),
+          System.getenv("all_proxy"),
+          System.getenv("ALL_PROXY"));
+      if (isBlank(rawProxy)) {
+        return null;
+      }
+      try {
+        URL proxyUrl = rawProxy.indexOf("://") >= 0 ? new URL(rawProxy) : new URL("http://" + rawProxy);
+        String host = proxyUrl.getHost();
+        if (isBlank(host)) {
+          return null;
+        }
+        int port = proxyUrl.getPort();
+        if (port <= 0) {
+          port = proxyUrl.getDefaultPort() > 0 ? proxyUrl.getDefaultPort() : 80;
+        }
+        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
+      } catch (Exception ignored) {
+        return null;
+      }
+    }
+
     private static String extractOutputText(String json) {
       int typeIndex = json.indexOf("\"output_text\"");
       if (typeIndex >= 0) {
@@ -694,6 +732,34 @@ public final class ReplaySummaryCli {
         return text;
       }
       return extractJsonStringByKey(json, "text", 0);
+    }
+
+    private static Integer extractJsonIntegerByKey(String json, String key, int fromIndex) {
+      String quotedKey = "\"" + key + "\"";
+      int keyIndex = json.indexOf(quotedKey, Math.max(0, fromIndex));
+      while (keyIndex >= 0) {
+        int colon = json.indexOf(':', keyIndex + quotedKey.length());
+        if (colon < 0) {
+          return null;
+        }
+        int start = colon + 1;
+        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
+          start++;
+        }
+        int end = start;
+        while (end < json.length() && Character.isDigit(json.charAt(end))) {
+          end++;
+        }
+        if (end > start) {
+          try {
+            return Integer.valueOf(Integer.parseInt(json.substring(start, end)));
+          } catch (NumberFormatException ignored) {
+            return null;
+          }
+        }
+        keyIndex = json.indexOf(quotedKey, keyIndex + quotedKey.length());
+      }
+      return null;
     }
 
     private static String extractJsonStringByKey(String json, String key, int fromIndex) {
@@ -767,7 +833,7 @@ public final class ReplaySummaryCli {
       String functionalSection = functionalSection(summary.functionalAssessment);
       String awrDeepDive = summary.includeAwrDeepDive ? awrDeepDive(summary) : "";
       String llmNote = summary.llmNarrativeUsed
-          ? "Optional LLM narrative mode was used for the Executive Summary narrative with model " + defaultText(summary.llmNarrativeModel) + "; parsed metrics and tables remain deterministic."
+          ? "Optional LLM narrative mode was used for the Executive Summary narrative with model " + defaultText(summary.llmNarrativeModel) + ". " + llmTokenNote(summary) + " Parsed metrics and tables remain deterministic."
           : summary.llmNarrativeRequested && !isBlank(summary.llmNarrativeWarning)
               ? summary.llmNarrativeWarning
               : "LLM narrative mode is not used; all text is deterministic and derived from supplied report tables.";
@@ -1494,6 +1560,18 @@ public final class ReplaySummaryCli {
       caveats.add("replay physical memory decreased from " + strong(defaultText(captureMemory)) + " to " + strong(defaultText(replayMemory)));
     }
     return "Not apples-to-apples: " + join("; ", caveats) + ".";
+  }
+
+  private static String llmTokenNote(Summary summary) {
+    if (summary.llmTotalTokens == null) {
+      return "Token usage was not returned by the API.";
+    }
+    String note = "Total tokens used was " + summary.llmTotalTokens + ".";
+    if (summary.llmInputTokens != null || summary.llmOutputTokens != null) {
+      note += " Input tokens: " + (summary.llmInputTokens == null ? "unknown" : String.valueOf(summary.llmInputTokens))
+          + "; output tokens: " + (summary.llmOutputTokens == null ? "unknown" : String.valueOf(summary.llmOutputTokens)) + ".";
+    }
+    return note;
   }
 
   private static String strong(String text) {
