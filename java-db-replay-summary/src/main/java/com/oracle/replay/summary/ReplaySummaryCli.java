@@ -2,8 +2,12 @@ package com.oracle.replay.summary;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +45,9 @@ public final class ReplaySummaryCli {
           : ReportBundle.fromDirectory(args.reportDir, args.replayId);
 
       Summary summary = SummaryBuilder.build(bundle, args.includeAwrDeepDive);
+      if (args.llmNarrative) {
+        LlmNarrative.apply(summary, args);
+      }
       String html = SummaryRenderer.render(summary);
       Path out = Paths.get(isBlank(args.out)
           ? projectRoot.resolve("replay-executive-summary-" + safeFilePart(bundle.replayId) + "-java.html").toString()
@@ -60,11 +67,12 @@ public final class ReplaySummaryCli {
   private static String usage() {
     return join("\n",
         "Usage:",
-        "  java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli (--replay-id <id> [--reports-root <dir>] | --report-dir <dir>) [--out <file>] [--include-awr-deep-dive]",
+        "  java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli (--replay-id <id> [--reports-root <dir>] | --report-dir <dir>) [--out <file>] [--include-awr-deep-dive] [--llm-narrative [--llm-model <model>] [--llm-endpoint <url>] [--llm-timeout-seconds <seconds>]]",
         "",
         "Examples:",
         "  java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli --replay-id 22 --out /tmp/replay-22-summary.html",
-        "  java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli --report-dir /path/to/replay22 --out /tmp/replay-22-summary.html");
+        "  java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli --report-dir /path/to/replay22 --out /tmp/replay-22-summary.html",
+        "  OPENAI_API_KEY=... java -cp java-db-replay-summary/build/classes com.oracle.replay.summary.ReplaySummaryCli --report-dir /path/to/replay22 --llm-narrative --out /tmp/replay-22-summary.html");
   }
 
   private static final class Args {
@@ -73,6 +81,10 @@ public final class ReplaySummaryCli {
     String reportsRoot;
     String out;
     boolean includeAwrDeepDive;
+    boolean llmNarrative;
+    String llmModel;
+    String llmEndpoint;
+    int llmTimeoutSeconds = 30;
     boolean help;
 
     static Args parse(String[] argv) {
@@ -89,6 +101,14 @@ public final class ReplaySummaryCli {
           args.out = requireValue(argv, ++i, token);
         } else if ("--include-awr-deep-dive".equals(token)) {
           args.includeAwrDeepDive = true;
+        } else if ("--llm-narrative".equals(token)) {
+          args.llmNarrative = true;
+        } else if ("--llm-model".equals(token)) {
+          args.llmModel = requireValue(argv, ++i, token);
+        } else if ("--llm-endpoint".equals(token)) {
+          args.llmEndpoint = requireValue(argv, ++i, token);
+        } else if ("--llm-timeout-seconds".equals(token)) {
+          args.llmTimeoutSeconds = parsePositiveInt(requireValue(argv, ++i, token), token);
         } else if ("--help".equals(token) || "-h".equals(token)) {
           args.help = true;
         } else {
@@ -96,6 +116,18 @@ public final class ReplaySummaryCli {
         }
       }
       return args;
+    }
+
+    private static int parsePositiveInt(String value, String flag) {
+      try {
+        int parsed = Integer.parseInt(value);
+        if (parsed <= 0) {
+          throw new NumberFormatException("not positive");
+        }
+        return parsed;
+      } catch (NumberFormatException error) {
+        throw new IllegalArgumentException("Expected positive integer for " + flag + ": " + value);
+      }
     }
 
     private static String requireValue(String[] argv, int index, String flag) {
@@ -200,6 +232,11 @@ public final class ReplaySummaryCli {
     String testOutcomeValid;
     String testOutcomeReason;
     String replayVerdict;
+    boolean llmNarrativeRequested;
+    boolean llmNarrativeUsed;
+    String llmNarrativeText;
+    String llmNarrativeModel;
+    String llmNarrativeWarning;
     String capturePlatform;
     String replayPlatform;
     CpuUsage captureCpu;
@@ -558,6 +595,168 @@ public final class ReplaySummaryCli {
     }
   }
 
+  private static final class LlmNarrative {
+    private static final String DEFAULT_ENDPOINT = "https://api.openai.com/v1/responses";
+    private static final String DEFAULT_MODEL = "gpt-5-mini";
+
+    static void apply(Summary summary, Args args) {
+      summary.llmNarrativeRequested = true;
+      summary.llmNarrativeModel = firstNonBlank(args.llmModel, System.getenv("OPENAI_MODEL"), DEFAULT_MODEL);
+      String apiKey = System.getenv("OPENAI_API_KEY");
+      if (isBlank(apiKey)) {
+        summary.llmNarrativeWarning = "LLM narrative requested but OPENAI_API_KEY is not set; deterministic narrative was used.";
+        System.err.println("Warning: " + summary.llmNarrativeWarning);
+        return;
+      }
+      String endpoint = firstNonBlank(args.llmEndpoint, System.getenv("OPENAI_RESPONSES_ENDPOINT"), DEFAULT_ENDPOINT);
+      try {
+        String response = postResponsesApi(endpoint, apiKey, summary.llmNarrativeModel, buildPrompt(summary), args.llmTimeoutSeconds);
+        String text = extractOutputText(response);
+        if (isBlank(text)) {
+          summary.llmNarrativeWarning = "LLM response did not contain output text; deterministic narrative was used.";
+          System.err.println("Warning: " + summary.llmNarrativeWarning);
+          return;
+        }
+        summary.llmNarrativeText = text.trim();
+        summary.llmNarrativeUsed = true;
+      } catch (Exception error) {
+        summary.llmNarrativeWarning = "LLM narrative failed (" + error.getMessage() + "); deterministic narrative was used.";
+        System.err.println("Warning: " + summary.llmNarrativeWarning);
+      }
+    }
+
+    private static String buildPrompt(Summary summary) {
+      StringBuilder data = new StringBuilder();
+      data.append("Write one concise executive-summary paragraph for an Oracle Database Replay report.\n");
+      data.append("Rules: use only the facts below; do not invent causes, timings, counts, or recommendations; preserve numeric values exactly; no markdown; 90 to 130 words.\n\n");
+      data.append("Facts:\n");
+      data.append("- Replay name: ").append(defaultText(summary.replayName)).append("\n");
+      data.append("- Replay status: ").append(defaultText(summary.replayStatus)).append("\n");
+      data.append("- Outcome: ").append(defaultText(summary.replayVerdict)).append("\n");
+      data.append("- Risk rating: ").append(defaultText(summary.riskRating)).append("\n");
+      data.append("- Replay database: ").append(defaultText(summary.replayDb)).append("\n");
+      data.append("- Capture database: ").append(defaultText(summary.captureDb)).append("\n");
+      data.append("- Database Time: ").append(metricSummary(summary.dbTime)).append("\n");
+      data.append("- CPU Time: ").append(metricSummary(summary.cpuTime)).append("\n");
+      data.append("- Divergence: ").append(divergenceValue(summary.divergenceLevel, summary.divergencePct)).append("\n");
+      data.append("- Test objective: ").append(defaultText(summary.testObjectiveType)).append(" - ").append(defaultText(summary.testObjectiveReason)).append("\n");
+      data.append("- Test outcome: ").append(defaultText(summary.testOutcomeValid)).append(" - ").append(defaultText(summary.testOutcomeReason)).append("\n");
+      data.append("- Functional comparability: ").append(summary.functionalAssessment == null ? "" : defaultText(summary.functionalAssessment.status)).append("\n");
+      if (!isBlank(summary.comparabilityNote)) {
+        data.append("- Comparability caveat: ").append(summary.comparabilityNote).append("\n");
+      }
+      if (!summary.addm.isEmpty()) {
+        data.append("- Top ADDM signals: ").append(addmPlainText(summary.addm, 3)).append("\n");
+      }
+      if (!summary.likelyCauses.isEmpty()) {
+        data.append("- Likely causes: ").append(join("; ", first(summary.likelyCauses, 5))).append("\n");
+      }
+      return data.toString();
+    }
+
+    private static String postResponsesApi(String endpoint, String apiKey, String model, String prompt, int timeoutSeconds) throws IOException {
+      URL url = new URL(endpoint);
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setRequestMethod("POST");
+      connection.setConnectTimeout(timeoutSeconds * 1000);
+      connection.setReadTimeout(timeoutSeconds * 1000);
+      connection.setDoOutput(true);
+      connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+      connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+      String body = "{"
+          + "\"model\":" + jsonString(model) + ","
+          + "\"input\":" + jsonString(prompt)
+          + "}";
+      OutputStream out = connection.getOutputStream();
+      try {
+        out.write(body.getBytes(StandardCharsets.UTF_8));
+      } finally {
+        out.close();
+      }
+      int status = connection.getResponseCode();
+      String response = readStream(status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream());
+      if (status < 200 || status >= 300) {
+        throw new IOException("HTTP " + status + ": " + abbreviate(response, 240));
+      }
+      return response;
+    }
+
+    private static String extractOutputText(String json) {
+      int typeIndex = json.indexOf("\"output_text\"");
+      if (typeIndex >= 0) {
+        String text = extractJsonStringByKey(json, "text", typeIndex);
+        if (!isBlank(text)) {
+          return text;
+        }
+      }
+      String text = extractJsonStringByKey(json, "output_text", 0);
+      if (!isBlank(text)) {
+        return text;
+      }
+      return extractJsonStringByKey(json, "text", 0);
+    }
+
+    private static String extractJsonStringByKey(String json, String key, int fromIndex) {
+      String quotedKey = "\"" + key + "\"";
+      int keyIndex = json.indexOf(quotedKey, Math.max(0, fromIndex));
+      while (keyIndex >= 0) {
+        int colon = json.indexOf(':', keyIndex + quotedKey.length());
+        if (colon < 0) {
+          return "";
+        }
+        int start = colon + 1;
+        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
+          start++;
+        }
+        if (start < json.length() && json.charAt(start) == '"') {
+          return parseJsonString(json, start);
+        }
+        keyIndex = json.indexOf(quotedKey, keyIndex + quotedKey.length());
+      }
+      return "";
+    }
+
+    private static String parseJsonString(String json, int quoteIndex) {
+      StringBuilder out = new StringBuilder();
+      for (int i = quoteIndex + 1; i < json.length(); i++) {
+        char ch = json.charAt(i);
+        if (ch == '"') {
+          return out.toString();
+        }
+        if (ch == '\\' && i + 1 < json.length()) {
+          char next = json.charAt(++i);
+          if (next == '"' || next == '\\' || next == '/') {
+            out.append(next);
+          } else if (next == 'b') {
+            out.append('\b');
+          } else if (next == 'f') {
+            out.append('\f');
+          } else if (next == 'n') {
+            out.append('\n');
+          } else if (next == 'r') {
+            out.append('\r');
+          } else if (next == 't') {
+            out.append('\t');
+          } else if (next == 'u' && i + 4 < json.length()) {
+            String hex = json.substring(i + 1, i + 5);
+            try {
+              out.append((char) Integer.parseInt(hex, 16));
+              i += 4;
+            } catch (NumberFormatException error) {
+              out.append("\\u").append(hex);
+              i += 4;
+            }
+          } else {
+            out.append(next);
+          }
+        } else {
+          out.append(ch);
+        }
+      }
+      return out.toString();
+    }
+  }
+
   private static final class SummaryRenderer {
     static String render(Summary summary) {
       String dbTimeChart = metricChart("DB Time", summary.dbTime, "seconds");
@@ -567,6 +766,11 @@ public final class ReplaySummaryCli {
       String addmBottlenecks = addmBottleneckItems(summary.addm);
       String functionalSection = functionalSection(summary.functionalAssessment);
       String awrDeepDive = summary.includeAwrDeepDive ? awrDeepDive(summary) : "";
+      String llmNote = summary.llmNarrativeUsed
+          ? "Optional LLM narrative mode was used for the Executive Summary narrative with model " + defaultText(summary.llmNarrativeModel) + "; parsed metrics and tables remain deterministic."
+          : summary.llmNarrativeRequested && !isBlank(summary.llmNarrativeWarning)
+              ? summary.llmNarrativeWarning
+              : "LLM narrative mode is not used; all text is deterministic and derived from supplied report tables.";
       String finalVerdictBody = defaultText(summary.bottomLineBanner);
       if (!isBlank(summary.comparabilityNote)) {
         finalVerdictBody += " " + summary.comparabilityNote;
@@ -636,7 +840,7 @@ public final class ReplaySummaryCli {
           + row("Replay physical memory", summary.replayInstance == null ? "" : summary.replayInstance.physicalMemory)
           + row("Generated", summary.generatedAt)
           + "</table></section>\n"
-          + "<section><h2>Java Utility Notes</h2><div class=\"summary-block\">Generated by the standalone Java 8 utility. LLM narrative mode is not used; all text is deterministic and derived from supplied report tables.</div></section>\n"
+          + "<section><h2>Java Utility Notes</h2><div class=\"summary-block\">Generated by the standalone Java 8 utility. " + esc(llmNote) + "</div></section>\n"
           + "</main></body></html>\n";
     }
 
@@ -1170,6 +1374,9 @@ public final class ReplaySummaryCli {
   }
 
   private static String executiveSummaryHtml(Summary summary) {
+    if (summary.llmNarrativeUsed && !isBlank(summary.llmNarrativeText)) {
+      return "<p style=\"margin:0;\">" + emphasizeKnownValues(esc(summary.llmNarrativeText), summary) + "</p>";
+    }
     StringBuilder out = new StringBuilder();
     out.append("<p style=\"margin:0;\">")
         .append("Replay ")
@@ -1208,6 +1415,42 @@ public final class ReplaySummaryCli {
     out.append(" The highest-priority review items are Database Time, replay divergence, environment comparability, ADDM comparison signals, and top replay SQL by DB Time.");
     out.append("</p>");
     return out.toString();
+  }
+
+  private static String emphasizeKnownValues(String escapedText, Summary summary) {
+    List<String> values = new ArrayList<String>();
+    if (summary.dbTime != null && summary.dbTime.changePct != null) {
+      values.add(fmt(Math.abs(summary.dbTime.changePct), 1) + "%");
+      values.add(signedPct(summary.dbTime.changePct, 1));
+      values.add(signedPct(summary.dbTime.changePct, 2));
+    }
+    if (summary.cpuTime != null && summary.cpuTime.changePct != null) {
+      values.add(fmt(Math.abs(summary.cpuTime.changePct), 1) + "%");
+      values.add(signedPct(summary.cpuTime.changePct, 1));
+      values.add(signedPct(summary.cpuTime.changePct, 2));
+    }
+    if (summary.divergencePct != null) {
+      values.add(fmt(summary.divergencePct, 2) + "%");
+    }
+    values.add(summary.replayVerdict);
+    values.add(summary.replayStatus);
+    values.add(summary.divergenceLevel);
+    values.add(summary.captureVersion);
+    values.add(summary.replayVersion);
+    if (summary.captureInstance != null) {
+      values.add(summary.captureInstance.physicalMemory);
+    }
+    if (summary.replayInstance != null) {
+      values.add(summary.replayInstance.physicalMemory);
+    }
+    String out = escapedText;
+    for (String value : values) {
+      if (!isBlank(value)) {
+        String escapedValue = esc(value);
+        out = out.replace(escapedValue, "<strong>" + escapedValue + "</strong>");
+      }
+    }
+    return out;
   }
 
   private static String dbTimePhraseHtml(Metric dbTime) {
@@ -1694,6 +1937,75 @@ public final class ReplaySummaryCli {
       ids.add(row.sqlId);
     }
     return join(", ", ids);
+  }
+
+  private static String addmPlainText(List<AddmFinding> rows, int limit) {
+    List<String> values = new ArrayList<String>();
+    for (AddmFinding row : rows) {
+      if (row.replayPct == null || row.replayPct.doubleValue() <= 0.0) {
+        continue;
+      }
+      values.add(row.name + " (" + nullSafePct(row.replayPct) + " replay impact share)");
+      if (values.size() >= limit) {
+        break;
+      }
+    }
+    return values.isEmpty() ? "Unavailable" : join("; ", values);
+  }
+
+  private static String readStream(InputStream input) throws IOException {
+    if (input == null) {
+      return "";
+    }
+    byte[] buffer = new byte[4096];
+    StringBuilder out = new StringBuilder();
+    try {
+      int read;
+      while ((read = input.read(buffer)) != -1) {
+        out.append(new String(buffer, 0, read, StandardCharsets.UTF_8));
+      }
+    } finally {
+      input.close();
+    }
+    return out.toString();
+  }
+
+  private static String abbreviate(String value, int max) {
+    String text = defaultText(value).replaceAll("\\s+", " ");
+    return text.length() <= max ? text : text.substring(0, max) + "...";
+  }
+
+  private static String jsonString(String value) {
+    String text = value == null ? "" : value;
+    StringBuilder out = new StringBuilder();
+    out.append('"');
+    for (int i = 0; i < text.length(); i++) {
+      char ch = text.charAt(i);
+      if (ch == '"' || ch == '\\') {
+        out.append('\\').append(ch);
+      } else if (ch == '\b') {
+        out.append("\\b");
+      } else if (ch == '\f') {
+        out.append("\\f");
+      } else if (ch == '\n') {
+        out.append("\\n");
+      } else if (ch == '\r') {
+        out.append("\\r");
+      } else if (ch == '\t') {
+        out.append("\\t");
+      } else if (ch < 0x20) {
+        String hex = Integer.toHexString(ch);
+        out.append("\\u");
+        for (int pad = hex.length(); pad < 4; pad++) {
+          out.append('0');
+        }
+        out.append(hex);
+      } else {
+        out.append(ch);
+      }
+    }
+    out.append('"');
+    return out.toString();
   }
 
   private static <T> List<T> first(List<T> rows, int limit) {

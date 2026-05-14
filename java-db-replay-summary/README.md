@@ -45,10 +45,25 @@ Optional flags:
 
 - `--reports-root <dir>` overrides the report root when using `--replay-id`
 - `--include-awr-deep-dive` adds lightweight AWR wait-event and SQL-driver sections when the AWR report is present
+- `--llm-narrative` optionally rewrites the Executive Summary narrative with an LLM; requires `OPENAI_API_KEY`
+- `--llm-model <model>` overrides the LLM model used with `--llm-narrative` (`OPENAI_MODEL` can also be used)
+- `--llm-endpoint <url>` overrides the OpenAI Responses API endpoint
+- `--llm-timeout-seconds <seconds>` overrides the LLM HTTP timeout
 - `--help` prints usage
+
+Example with optional LLM narrative:
+
+```sh
+OPENAI_API_KEY=... java -cp java-db-replay-summary/build/classes \
+  com.oracle.replay.summary.ReplaySummaryCli \
+  --report-dir /path/to/replay22 \
+  --llm-narrative \
+  --out /tmp/replay-22-java-summary.html
+```
 
 ## Notes
 
 - The parser uses only data present in the supplied Oracle HTML reports.
 - Missing optional reports are tolerated where possible; missing DB Replay or Compare Period reports are errors.
-- LLM narrative rewrite is intentionally not included in this Java utility so it can run independently without network access or API configuration.
+- LLM narrative rewrite is optional. Without `--llm-narrative`, the utility runs fully offline with deterministic text.
+- If `--llm-narrative` is enabled but the API key or network call is unavailable, the utility falls back to deterministic text and records the warning in the generated report.
